@@ -86,7 +86,9 @@ export class X402PaymentExecutor implements PaymentExecutor {
       client.register(avm.ALGORAND_TESTNET_CAIP2, new avm.ExactAvmScheme(avmSigner));
       const fetchWithPayment = fetchClient.wrapFetchWithPayment(fetch, client);
 
-      const response = await fetchWithPayment(this.config.resourceUrl as string, {
+      const endpointUrl = `${this.config.resourceUrl}/services/${request.serviceCategory.replace("_", "-")}`;
+
+      const response = await fetchWithPayment(endpointUrl, {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({

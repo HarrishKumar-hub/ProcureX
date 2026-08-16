@@ -4,10 +4,12 @@
   "main": "dist/server.js",
   "scripts": {
     "dev": "tsx watch src/server.ts",
+    "dev:provider": "tsx watch src/x402/resource-server/server.ts",
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc --noEmit",
     "start": "node dist/server.js",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:x402": "vitest run x402-integration"
   },
   "keywords": [],
   "author": "",
@@ -15,11 +17,15 @@
   "description": "",
   "dependencies": {
     "@algorandfoundation/algokit-utils": "^10.0.0-alpha.42",
+    "@hono/node-server": "*",
+    "@x402-avm/extensions": "*",
     "@x402/avm": "^2.22.0",
     "@x402/core": "^2.22.0",
     "@x402/fetch": "^2.22.0",
+    "@x402/hono": "*",
     "dotenv": "^17.4.2",
-    "express": "^5.2.1"
+    "express": "^5.2.1",
+    "hono": "*"
   },
   "devDependencies": {
     "@types/express": "^5.0.6",

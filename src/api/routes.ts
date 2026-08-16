@@ -20,45 +20,7 @@ const isNonEmptyString = (value: unknown): value is string =>
 const isNumber = (value: unknown): value is number =>
   typeof value === "number" && Number.isFinite(value);
 
-const readIpQuery = (value: unknown): string | undefined => {
-  if (typeof value === "string" && value.trim().length > 0) {
-    return value.trim();
-  }
-  if (Array.isArray(value) && typeof value[0] === "string" && value[0].trim().length > 0) {
-    return value[0].trim();
-  }
-  return undefined;
-};
 
-const runServiceQuery = async (
-  response: Response,
-  context: AppContext,
-  category: SupportedServiceCategory,
-  ipQuery: unknown
-): Promise<void> => {
-  const ip = readIpQuery(ipQuery);
-  if (!ip) {
-    badRequest(response, "Query parameter 'ip' is required");
-    return;
-  }
-
-  try {
-    const result = await context.providerDiscoveryService.executeTopRankedProvider(category, ip);
-    response.json({
-      ...result.result,
-      provider: {
-        id: result.provider.id,
-        name: result.provider.name,
-        trustScore: result.provider.trustScore,
-        price: result.provider.price,
-        currency: result.provider.currency
-      }
-    });
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "Service execution failed";
-    response.status(400).json({ error: message });
-  }
-};
 
 export const createRouter = (context: AppContext): Router => {
   const router = Router();
@@ -176,17 +138,7 @@ export const createRouter = (context: AppContext): Router => {
     response.json(context.providerDiscoveryService.listServiceCatalog());
   });
 
-  router.get("/services/ip-reputation", async (request: Request, response: Response) => {
-    await runServiceQuery(response, context, "ip_reputation", request.query.ip);
-  });
 
-  router.get("/services/threat-intelligence", async (request: Request, response: Response) => {
-    await runServiceQuery(response, context, "threat_intelligence", request.query.ip);
-  });
-
-  router.get("/services/malware-analysis", async (request: Request, response: Response) => {
-    await runServiceQuery(response, context, "malware_analysis", request.query.ip);
-  });
 
   router.post("/payment-requests/evaluate", (request: Request, response: Response) => {
     const payload = request.body as Partial<EvaluatePaymentInput>;

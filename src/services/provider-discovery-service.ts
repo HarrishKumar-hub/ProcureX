@@ -65,14 +65,7 @@ export class ProviderDiscoveryService {
     return this.providerRegistry.getById(providerId)?.getMetadata();
   }
 
-  async executeTopRankedProvider(
-    category: SupportedServiceCategory,
-    ip: string
-  ): Promise<{ provider: ProviderMetadata; result: Record<string, unknown> }> {
-    const provider = this.selectTopProvider(category);
-    const result = await provider.execute({ ip });
-    return { provider: provider.getMetadata(), result };
-  }
+
 
   private selectTopProvider(category: SupportedServiceCategory): PaidServiceProvider {
     const ranked = this.rankProviders(category, {
