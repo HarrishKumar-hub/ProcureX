@@ -14,6 +14,8 @@ import { PaymentOrchestrator } from "./services/payment-orchestrator";
 import { ProviderDiscoveryService } from "./services/provider-discovery-service";
 import { X402PaymentExecutor } from "./services/x402-payment-executor";
 import { DeterministicTaskRelevanceScorer } from "./services/task-relevance";
+import { AgentPlanner } from "./services/agent-planner";
+import { AgentOrchestrator } from "./services/agent-orchestrator";
 
 export interface AppContext {
   agentRepository: InMemoryAgentRepository;
@@ -23,6 +25,8 @@ export interface AppContext {
   evaluationService: EvaluationService;
   paymentOrchestrator: PaymentOrchestrator;
   providerDiscoveryService: ProviderDiscoveryService;
+  agentPlanner: AgentPlanner;
+  agentOrchestrator: AgentOrchestrator;
 }
 
 export const createAppContext = (): AppContext => {
@@ -53,6 +57,15 @@ export const createAppContext = (): AppContext => {
   const providerRegistry = new ProviderRegistry();
   const providerDiscoveryService = new ProviderDiscoveryService(providerRegistry);
 
+  const agentPlanner = new AgentPlanner();
+  const agentOrchestrator = new AgentOrchestrator(
+    agentPlanner,
+    providerDiscoveryService,
+    paymentOrchestrator,
+    taskRepository,
+    providerRepository
+  );
+
   return {
     agentRepository,
     taskRepository,
@@ -60,6 +73,8 @@ export const createAppContext = (): AppContext => {
     providerRepository,
     evaluationService,
     paymentOrchestrator,
-    providerDiscoveryService
+    providerDiscoveryService,
+    agentPlanner,
+    agentOrchestrator
   };
 };

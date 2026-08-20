@@ -92,7 +92,7 @@ describe("PaymentOrchestrator", () => {
 
     const result = await orchestrator.executePayment({
       ...baseInput,
-      providerId: "provider-suspicious",
+      providerId: "provider-suspicious-threatintel",
       amount: 2
     });
 
@@ -161,7 +161,7 @@ describe("PaymentOrchestrator", () => {
 
     const result = await orchestrator.executePayment({
       ...baseInput,
-      providerId: "provider-suspicious",
+      providerId: "provider-suspicious-threatintel",
       amount: 2
     });
 

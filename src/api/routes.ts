@@ -138,8 +138,30 @@ export const createRouter = (context: AppContext): Router => {
     response.json(context.providerDiscoveryService.listServiceCatalog());
   });
 
+  router.post("/agent/investigate", async (request: Request, response: Response) => {
+    const payload = request.body;
+    if (
+      !isNonEmptyString(payload.userIntent) ||
+      !isNonEmptyString(payload.targetIp) ||
+      !isNumber(payload.budget)
+    ) {
+      return badRequest(response, "Invalid agent investigation payload");
+    }
 
-
+    try {
+      const result = await context.agentOrchestrator.executeInvestigation({
+        userIntent: payload.userIntent,
+        targetIp: payload.targetIp,
+        budget: payload.budget,
+        agentId: "agent-security-01", // Assuming demo agent
+        simulateAttack: payload.simulateAttack
+      });
+      response.status(200).json(result);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Agent investigation failed";
+      response.status(500).json({ error: message });
+    }
+  });
   router.post("/payment-requests/evaluate", (request: Request, response: Response) => {
     const payload = request.body as Partial<EvaluatePaymentInput>;
     if (

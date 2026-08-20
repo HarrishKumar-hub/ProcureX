@@ -1,0 +1,16 @@
+@import "tailwindcss";
+
+@theme {
+  --color-gold-400: #e2c044;
+  --color-gold-500: #d4af37;
+  --color-gold-600: #aa8c2c;
+}
+
+:root {
+  color-scheme: dark;
+}
+
+body {
+  background-color: #020617; /* slate-950 */
+  color: #e2e8f0; /* slate-200 */
+}

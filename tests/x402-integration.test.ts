@@ -62,10 +62,16 @@ describe("x402 Integration Tests", () => {
     const app = new Hono();
     app.route("/", createResourceRouter());
     
-    // Initialize the facilitator with mocked capabilities for test environment
-    (resourceServer as any).supportedKinds = [
-      { scheme: "exact", network: "algorand:SGO1GKSzyE7IEPItTxCByw9x8FmnrCDe" }
-    ];
+    // Mock global fetch to prevent network requests to the blocked facilitator
+    const originalFetch = global.fetch;
+    global.fetch = async (url: any, options?: any) => {
+      if (url.toString().includes("goplausible.xyz")) {
+        return new Response(JSON.stringify({
+          kinds: [{ x402Version: 1, scheme: "exact", network: "algorand:SGO1GKSzyE7IEPItTxCByw9x8FmnrCDe" }]
+        }));
+      }
+      return originalFetch(url, options);
+    };
     // Override the check
     (resourceServer as any).hasSupport = () => true;
     (resourceServer as any).isSchemeSupported = () => true;

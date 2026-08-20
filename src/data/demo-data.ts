@@ -69,7 +69,7 @@ export const demoProviders: Provider[] = [
     status: "ACTIVE"
   },
   {
-    id: "provider-suspicious",
+    id: "provider-suspicious-threatintel",
     name: "SuspiciousProvider-X",
     serviceCategory: "threat_intelligence",
     trustScore: 42,
