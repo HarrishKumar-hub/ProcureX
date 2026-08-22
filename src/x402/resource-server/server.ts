@@ -1,15 +1,16 @@
 import { serve } from "@hono/node-server";
 import { Hono } from "hono";
 import { createResourceRouter } from "./routes";
+import { initializeResourceServer } from "./middleware";
 import { config } from "./config";
 
-const start = () => {
+const start = async () => {
+  // Initialize x402 with facilitator FIRST
+  await initializeResourceServer();
+
   const app = new Hono();
   
-  // Health check for the resource server
   app.get("/health", (c) => c.json({ status: "ok", service: "ProcureX x402 Resource Server" }));
-
-  // Mount the resource routes
   app.route("/", createResourceRouter());
 
   serve({
