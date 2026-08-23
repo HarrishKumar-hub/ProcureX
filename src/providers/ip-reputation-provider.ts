@@ -15,7 +15,7 @@ export class IpReputationProvider implements PaidServiceProvider {
     price: 0.01,
     currency: "USDC",
     endpoint: "/services/ip-reputation",
-    description: "Deterministic mock IP reputation scoring for security demos."
+    description: "Real-time IP reputation scoring powered by AbuseIPDB (free tier)."
   };
 
   getMetadata(): ProviderMetadata {

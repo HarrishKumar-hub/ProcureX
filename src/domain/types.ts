@@ -151,4 +151,5 @@ export interface PaymentOrchestrationResult {
   explanation: string;
   policyDecision: PolicyDecisionView;
   paymentExecution: PaymentExecutionView;
+  providerResponse?: unknown;
 }

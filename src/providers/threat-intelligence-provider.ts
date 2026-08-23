@@ -15,7 +15,7 @@ export class ThreatIntelligenceProvider implements PaidServiceProvider {
     price: 0.02,
     currency: "USDC",
     endpoint: "/services/threat-intelligence",
-    description: "Deterministic mock threat context enrichment for demo investigations."
+    description: "Real-time threat intelligence enrichment powered by VirusTotal (free tier)."
   };
 
   getMetadata(): ProviderMetadata {

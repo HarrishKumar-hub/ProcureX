@@ -134,13 +134,19 @@ export class AgentOrchestrator {
         }
 
         if (orchestrationRes.decision === "APPROVE" && orchestrationRes.paymentStatus !== "FAILED") {
-          // Successfully executed payment (or MOCKED paid success)
+          // Successfully executed payment — pull real data from provider response
           totalSpent += provider.price;
+
+          // Extract the real API result from the x402 payment response
+          const providerResult = (orchestrationRes.providerResponse as any)?.result ?? orchestrationRes.providerResponse;
+          const finding = this.buildFinding(step.category, payload.targetIp, providerResult);
+
           stepsExecuted.push({
             category: step.category,
             providerId: provider.id,
             cost: provider.price,
-            result: { status: "SUCCESS", simulatedData: `Retrieved intel for ${payload.targetIp}` }
+            result: providerResult ?? { status: "SUCCESS" },
+            finding
           });
           stepCompleted = true;
           break; // Move on to the next capability in the plan
@@ -169,8 +175,42 @@ export class AgentOrchestrator {
         targetIp: payload.targetIp,
         verdict: securityIncidentsBlocked.length > 0 ? "MALICIOUS" : "BENIGN",
         riskScore: stepsExecuted.length * 20 + securityIncidentsBlocked.length * 30,
-        findings: stepsExecuted.map(s => `Successfully executed ${s.category} via ${s.providerId}`)
+        findings: stepsExecuted.map(s => s.finding || `Successfully executed ${s.category} via ${s.providerId}`)
       }
     };
+  }
+
+  private buildFinding(category: string, ip: string, result: any): string {
+    if (!result || result.fallback || result.error) {
+      return `${category}: Real-time lookup unavailable — ${result?.error || "no data returned"}`;
+    }
+
+    switch (category) {
+      case "ip_reputation": {
+        const score = result.abuseConfidenceScore ?? "N/A";
+        const reports = result.totalReports ?? 0;
+        const country = result.countryCode ?? "Unknown";
+        const risk = result.riskLevel ?? "unknown";
+        return `AbuseIPDB: ${ip} has abuse confidence score ${score}/100 across ${reports} reports (country: ${country}, risk: ${risk})`;
+      }
+      case "threat_intelligence": {
+        const stats = result.lastAnalysisStats || {};
+        const mal = stats.malicious ?? 0;
+        const sus = stats.suspicious ?? 0;
+        const total = result.totalEngines ?? 0;
+        const threat = result.threatLevel ?? "unknown";
+        const owner = result.asOwner ?? "Unknown";
+        return `VirusTotal: ${ip} flagged by ${mal} malicious + ${sus} suspicious engines out of ${total} (threat: ${threat}, AS: ${owner})`;
+      }
+      case "malware_analysis": {
+        const ports = result.openPorts ?? 0;
+        const vulns = (result.vulns || []).length;
+        const org = result.organization ?? "Unknown";
+        const severity = result.severity ?? "unknown";
+        return `Shodan: ${ip} has ${ports} open ports, ${vulns} known CVEs (org: ${org}, severity: ${severity})`;
+      }
+      default:
+        return `Successfully executed ${category} for ${ip}`;
+    }
   }
 }

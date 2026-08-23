@@ -71,7 +71,8 @@ export class PaymentOrchestrator {
       riskAssessment: policyDecision.riskAssessment,
       explanation: policyDecision.explanation,
       policyDecision,
-      paymentExecution
+      paymentExecution,
+      providerResponse: execution.providerResponse
     };
   }
 
