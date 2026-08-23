@@ -20,18 +20,28 @@ export const createApp = () => {
   
   app.use(cors(corsOptions));
   app.options(/.*/, cors(corsOptions));
-  
-  app.use(express.json());
-  app.use(createRouter(context));
 
-  // Mount x402 resource router on main app
+  // Mount x402 resource router on main app BEFORE express.json()
   const resourceRouter = createResourceRouter();
   app.use((req, res, next) => {
     if (req.path.startsWith("/services/")) {
-      return resourceRouter.fetch(new Request(new URL(req.url, `http://${req.headers.host}`).href, {
+      const proto = req.headers["x-forwarded-proto"] || "http";
+      const fullUrl = `${proto}://${req.headers.host}${req.url}`;
+      
+      const headers = new Headers();
+      Object.entries(req.headers).forEach(([k, v]) => {
+        if (v) headers.set(k, Array.isArray(v) ? v.join(", ") : v);
+      });
+
+      let bodyData: any = undefined;
+      if (req.method !== "GET" && req.method !== "HEAD") {
+        bodyData = typeof req.body === "string" ? req.body : JSON.stringify(req.body || {});
+      }
+
+      return resourceRouter.fetch(new Request(fullUrl, {
         method: req.method,
-        headers: req.headers as any,
-        body: req.method !== "GET" && req.method !== "HEAD" ? JSON.stringify(req.body) : undefined
+        headers,
+        body: bodyData
       })).then(async (webRes) => {
         webRes.headers.forEach((val, key) => res.setHeader(key, val));
         res.status(webRes.status).send(await webRes.text());
@@ -39,6 +49,9 @@ export const createApp = () => {
     }
     next();
   });
+
+  app.use(express.json());
+  app.use(createRouter(context));
 
   return app;
 };
