@@ -46,7 +46,7 @@ export class AgentOrchestrator {
           serviceCategory: "threat_intelligence",
           trustScore: 99,
           reputationScore: 99,
-          historicalAveragePrice: 2.00,
+          historicalAveragePrice: 0.02,
           currentPrice: 2.00,
           successRate: 100,
           status: "ACTIVE"
@@ -94,7 +94,7 @@ export class AgentOrchestrator {
            currency: "USDC",
            trustScore: 99,
            reputationScore: 99,
-           historicalAveragePrice: 2.00,
+           historicalAveragePrice: 0.02,
            successRate: 100,
            status: "ACTIVE"
         });
