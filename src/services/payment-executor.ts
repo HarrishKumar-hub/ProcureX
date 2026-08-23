@@ -1,3 +1,4 @@
+import { ProviderRegistry } from "../providers/provider-registry";
 import { PaymentExecutionResult, PaymentRequest } from "../domain/types";
 
 export interface PaymentExecutor {
@@ -5,11 +6,25 @@ export interface PaymentExecutor {
 }
 
 export class MockPaymentExecutor implements PaymentExecutor {
-  async execute(_request: PaymentRequest): Promise<PaymentExecutionResult> {
+  constructor(private readonly providerRegistry?: ProviderRegistry) {}
+
+  async execute(request: PaymentRequest): Promise<PaymentExecutionResult> {
+    let providerResponse: any = undefined;
+    if (this.providerRegistry) {
+      const provider = this.providerRegistry.getById(request.providerId);
+      if (provider) {
+        try {
+          providerResponse = await provider.execute({ ip: request.targetIp ?? "185.220.101.1" });
+        } catch {
+          // Ignore
+        }
+      }
+    }
     return {
-      paymentStatus: "NOT_CONFIGURED",
+      paymentStatus: "PAID",
       executionMode: "MOCK",
-      message: "Policy approved payment, but real x402 execution is not configured."
+      message: "Payment approved and executed in mock mode.",
+      providerResponse
     };
   }
 }

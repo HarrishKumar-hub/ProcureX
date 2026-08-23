@@ -53,13 +53,14 @@ export const createAppContext = (): AppContext => {
     decisionRepository,
     policyEngine
   );
+  const providerRegistry = new ProviderRegistry();
+  const providerDiscoveryService = new ProviderDiscoveryService(providerRegistry);
+
   const enabled = process.env.X402_ENABLED === "true";
   const paymentExecutor = enabled
     ? new RealPaymentExecutor()
-    : new MockPaymentExecutor();
+    : new MockPaymentExecutor(providerRegistry);
   const paymentOrchestrator = new PaymentOrchestrator(evaluationService, paymentExecutor);
-  const providerRegistry = new ProviderRegistry();
-  const providerDiscoveryService = new ProviderDiscoveryService(providerRegistry);
 
   const agentPlanner = new AgentPlanner();
   const agentOrchestrator = new AgentOrchestrator(
