@@ -254,7 +254,7 @@ export default function Dashboard() {
                   {step.riskBreakdown && (step.type === "APPROVED" || step.type === "BLOCKED") && (
                     <div className="ml-11 flex flex-wrap gap-2 pt-0.5 pb-1">
                       <span className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] font-mono font-medium ring-1 ${step.riskBreakdown.trustScore.passed ? "bg-emerald-50 text-emerald-700 ring-emerald-200" : "bg-red-50 text-red-700 ring-red-200"}`}>
-                        Trust: {step.riskBreakdown.trustScore.value}/{step.riskBreakdown.trustScore.threshold} {step.riskBreakdown.trustScore.passed ? "✓" : "✗"}
+                        Trust: {step.riskBreakdown.trustScore.value}/100 {step.riskBreakdown.trustScore.passed ? "✓" : "✗"}
                       </span>
                       <span className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] font-mono font-medium ring-1 ${step.riskBreakdown.priceAnomaly.passed ? "bg-emerald-50 text-emerald-700 ring-emerald-200" : "bg-red-50 text-red-700 ring-red-200"}`}>
                         Price: ${step.riskBreakdown.priceAnomaly.currentPrice} vs ${step.riskBreakdown.priceAnomaly.historicalAvg} avg ({step.riskBreakdown.priceAnomaly.multiplier}x) {step.riskBreakdown.priceAnomaly.passed ? "✓" : `✗ (cap: ${step.riskBreakdown.priceAnomaly.cap}x)`}
