@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { ShieldCheck, Activity, Database, Banknote, CheckCircle2, XCircle, AlertTriangle, Play, RefreshCw, Cpu, Gauge, Users, Wallet } from "lucide-react";
 import { runInvestigation, OrchestrationResult } from "@/lib/api";
+import { ProviderLeaderboard } from "./ProviderLeaderboard";
 
 const AGENT_ADDRESS = "4U63RU6G52MUBG4QTYAJKG4ZBZ55Z4BXQUA3RTDNLVTOV7KLTWZNKKRM7I";
 
@@ -334,6 +335,8 @@ export default function Dashboard() {
               </div>
             </div>
           )}
+
+          <ProviderLeaderboard logs={feedSteps} />
         </div>
       </main>
     </div>
