@@ -26,29 +26,31 @@ export const createApp = () => {
   const resourceRouter = createResourceRouter();
   app.use(async (req, res, next) => {
     if (req.path.startsWith("/services/")) {
-      const fullUrl = `http://localhost:3000${req.url}`;
+      const fullUrl = `http://127.0.0.1:3000${req.originalUrl || req.url}`;
       
       const headers = new Headers();
       Object.entries(req.headers).forEach(([k, v]) => {
         if (v) headers.set(k, Array.isArray(v) ? v.join(", ") : v);
       });
 
-      let bodyData: any = undefined;
+      let bodyData: string | undefined = undefined;
       if (req.method !== "GET" && req.method !== "HEAD") {
         bodyData = typeof req.body === "string" ? req.body : JSON.stringify(req.body || {});
       }
 
-      return resourceRouter.fetch(new Request(fullUrl, {
-        method: req.method,
-        headers,
-        body: bodyData
-      })).then(async (webRes) => {
+      try {
+        const webRes = await resourceRouter.fetch(new Request(fullUrl, {
+          method: req.method,
+          headers,
+          body: bodyData
+        }));
+
         webRes.headers.forEach((val, key) => res.setHeader(key, val));
-        res.status(webRes.status).send(await webRes.text());
-      }).catch((err) => {
+        return res.status(webRes.status).send(await webRes.text());
+      } catch (err) {
         console.error("Resource router error:", err);
-        next(err);
-      });
+        return next(err);
+      }
     }
     next();
   });
