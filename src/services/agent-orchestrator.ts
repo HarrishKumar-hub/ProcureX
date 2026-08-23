@@ -114,7 +114,8 @@ export class AgentOrchestrator {
           serviceCategory: provider.serviceCategory,
           amount: provider.price,
           currency: provider.currency,
-          reason: step.reason
+          reason: step.reason,
+          targetIp: payload.targetIp
         });
 
         if (orchestrationRes.decision === "BLOCK") {

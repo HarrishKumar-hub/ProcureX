@@ -79,7 +79,8 @@ export class EvaluationService {
       amount: input.amount,
       currency: input.currency,
       reason: input.reason,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      targetIp: input.targetIp
     };
 
     const recentTransactions = this.getRecentAgentTransactions(agent.id);

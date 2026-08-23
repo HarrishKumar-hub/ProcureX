@@ -55,6 +55,7 @@ export interface PaymentRequest {
   currency: string;
   reason: string;
   timestamp: string;
+  targetIp?: string;
 }
 
 export interface RiskAssessment {
@@ -105,6 +106,7 @@ export interface EvaluatePaymentInput {
   amount: number;
   currency: string;
   reason: string;
+  targetIp?: string;
 }
 
 export type PaymentStatus =

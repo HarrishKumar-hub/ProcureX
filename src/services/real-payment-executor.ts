@@ -90,7 +90,8 @@ export class RealPaymentExecutor implements PaymentExecutor {
             serviceCategory: request.serviceCategory,
             amount: request.amount,
             currency: request.currency,
-            reason: request.reason
+            reason: request.reason,
+            ip: request.targetIp
           }),
           signal: controller.signal
         });
