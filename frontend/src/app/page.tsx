@@ -5,6 +5,7 @@ import { ShieldCheck, Activity, Database, Banknote, CheckCircle2, XCircle, Alert
 import { runInvestigation, OrchestrationResult } from "@/lib/api";
 import { ProviderLeaderboard } from "./ProviderLeaderboard";
 import JudgeWallet from "./components/JudgeWallet";
+import { AgentFlowVisualizer } from "./AgentFlowVisualizer";
 
 const AGENT_ADDRESS = "4U63RU6G52MUBG4QTYAJKG4ZBZ55Z4BXQUA3RTDNLVTOV7KLTWZNKKRM7I";
 
@@ -16,7 +17,7 @@ export default function Dashboard() {
   const [error, setError] = useState<string | null>(null);
   const [walletBalance, setWalletBalance] = useState<string | null>(null);
 
-  const [feedSteps, setFeedSteps] = useState<Array<{ type: string; message: string; riskBreakdown?: any }>>([]);
+  const [feedSteps, setFeedSteps] = useState<Array<{ type: string; message: string; riskBreakdown?: any; transactionId?: string }>>([]);
 
   const fetchBalance = async () => {
     try {
@@ -63,7 +64,12 @@ export default function Dashboard() {
       for (const step of data.stepsExecuted) {
         setFeedSteps((prev) => [...prev, { type: "DISCOVERY", message: `Discovered candidate for ${step.category}: ${step.providerId}` }]);
         await new Promise((r) => setTimeout(r, 600));
-        setFeedSteps((prev) => [...prev, { type: "APPROVED", message: `Payment APPROVED for ${step.providerId} ($${step.cost.toFixed(2)})`, riskBreakdown: step.riskBreakdown }]);
+        setFeedSteps((prev) => [...prev, { 
+          type: "APPROVED", 
+          message: `Payment APPROVED for ${step.providerId} ($${step.cost.toFixed(2)})`, 
+          riskBreakdown: step.riskBreakdown,
+          transactionId: step.transactionId 
+        }]);
         await new Promise((r) => setTimeout(r, 600));
         setFeedSteps((prev) => [...prev, { type: "EXECUTION", message: `Successfully executed ${step.category}.` }]);
         await new Promise((r) => setTimeout(r, 600));
@@ -266,6 +272,19 @@ export default function Dashboard() {
                       </span>
                     </div>
                   )}
+
+                  {step.transactionId && step.type === "APPROVED" && (
+                    <div className="ml-11 text-[11.5px] font-mono pt-0.5">
+                      <a
+                        href={`https://lora.algokit.io/testnet/transaction/${step.transactionId}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-emerald-700 hover:text-emerald-800 underline underline-offset-2"
+                      >
+                        🔗 View on Algorand: {step.transactionId.slice(0, 8)}...{step.transactionId.slice(-6)}
+                      </a>
+                    </div>
+                  )}
                 </div>
               ))}
               {isInvestigating && (
@@ -337,6 +356,12 @@ export default function Dashboard() {
               </div>
             </div>
           )}
+
+          <AgentFlowVisualizer
+            isInvestigating={isInvestigating}
+            feedSteps={feedSteps}
+            simulateAttack={simulateAttack}
+          />
 
           <ProviderLeaderboard logs={feedSteps} />
         </div>

@@ -20,6 +20,7 @@ export interface OrchestrationResult {
     providerId: string;
     cost: number;
     result: any;
+    transactionId?: string;
     riskBreakdown?: {
       trustScore: { value: number; threshold: number; passed: boolean };
       priceAnomaly: { currentPrice: number; historicalAvg: number; multiplier: number; cap: number; passed: boolean };

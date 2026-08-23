@@ -176,7 +176,8 @@ export class AgentOrchestrator {
             cost: provider.price,
             result: providerResult ?? { status: "SUCCESS" },
             finding,
-            riskBreakdown
+            riskBreakdown,
+            transactionId: orchestrationRes.transactionId
           });
           stepCompleted = true;
           break; // Move on to the next capability in the plan
