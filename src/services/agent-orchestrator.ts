@@ -105,6 +105,7 @@ export class AgentOrchestrator {
 
       let stepCompleted = false;
 
+      let lastProviderError = "";
       for (const provider of candidates) {
         // Submit Payment Request to Policy Engine
         const orchestrationRes = await this.paymentOrchestrator.executePayment({
@@ -125,6 +126,7 @@ export class AgentOrchestrator {
             reason: orchestrationRes.explanation,
             amount: provider.price
           });
+          lastProviderError = orchestrationRes.explanation;
           continue; // Try the next candidate fallback provider
         }
 
@@ -135,9 +137,10 @@ export class AgentOrchestrator {
         }
 
         if (orchestrationRes.decision === "APPROVE" && orchestrationRes.paymentStatus === "FAILED") {
+          lastProviderError = orchestrationRes.paymentExecution?.message || orchestrationRes.explanation;
           securityIncidentsBlocked.push({
             providerId: provider.id,
-            reason: orchestrationRes.paymentExecution.message,
+            reason: lastProviderError,
             amount: provider.price
           });
           continue;
@@ -164,8 +167,7 @@ export class AgentOrchestrator {
       }
 
       if (!stepCompleted && !isReviewRequired) {
-        const lastReason = securityIncidentsBlocked[securityIncidentsBlocked.length - 1]?.reason || "Payment execution returned non-APPROVED or FAILED status";
-        throw new Error(`All fallback providers blocked or failed for capability: ${step.category}. Details: ${lastReason}`);
+        throw new Error(`All fallback providers blocked or failed for capability: ${step.category}. Last error: ${lastProviderError}`);
       }
     }
 
