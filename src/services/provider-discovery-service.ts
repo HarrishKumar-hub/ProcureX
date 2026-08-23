@@ -32,7 +32,12 @@ export class ProviderDiscoveryService {
   }
 
   listByCategory(category: SupportedServiceCategory): ProviderMetadata[] {
-    return this.providerRegistry.getByCategory(category).map((provider) => provider.getMetadata());
+    const resourceUrl = process.env.X402_RESOURCE_URL ?? (process.env.NODE_ENV === "production" ? "https://procurex-backend-2xox.onrender.com" : "http://localhost:3000");
+    return this.providerRegistry.getByCategory(category).map((provider) => {
+      const meta = provider.getMetadata();
+      const endpoint = meta.endpoint.startsWith("http") ? meta.endpoint : `${resourceUrl}${meta.endpoint}`;
+      return { ...meta, endpoint };
+    });
   }
 
   rankProviders(category: SupportedServiceCategory, options: RankOptions = {}): ProviderMetadata[] {
