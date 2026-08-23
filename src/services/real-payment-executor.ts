@@ -5,7 +5,7 @@ import {
 } from "../domain/types";
 import { PaymentExecutor } from "./payment-executor";
 import { x402Client, wrapFetchWithPayment, x402HTTPClient } from "@x402/fetch";
-import { toClientAvmSigner, ExactAvmScheme, ALGORAND_TESTNET_CAIP2 } from "@x402/avm";
+import { toClientAvmSigner, ExactAvmScheme } from "@x402/avm";
 import { ed25519SigningKeyFromWrappedSecret } from "@algorandfoundation/algokit-utils/crypto";
 import { seedFromMnemonic } from "@algorandfoundation/algokit-utils/algo25";
 
@@ -56,7 +56,8 @@ export class RealPaymentExecutor implements PaymentExecutor {
 
       const avmSigner = toClientAvmSigner(secretKey);
       client = new x402Client();
-      client.register(ALGORAND_TESTNET_CAIP2, new ExactAvmScheme(avmSigner));
+      const ALGORAND_TESTNET_CAIP2_FULL = "algorand:SGO1GKSzyE7IEPItTxCByw9x8FmnrCDexi9/cOUJOiI=";
+      client.register(ALGORAND_TESTNET_CAIP2_FULL, new ExactAvmScheme(avmSigner));
       fetchWithPayment = wrapFetchWithPayment(fetch, client);
     } catch (e: any) {
       return {

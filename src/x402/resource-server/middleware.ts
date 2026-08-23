@@ -8,8 +8,10 @@ import { config } from "./config";
 const facilitatorClient = new HTTPFacilitatorClient({ url: config.facilitatorUrl });
 const avmScheme = new ExactAvmScheme();
 
+export const ALGORAND_TESTNET_CAIP2_FULL = "algorand:SGO1GKSzyE7IEPItTxCByw9x8FmnrCDexi9/cOUJOiI=";
+
 export const resourceServer = new x402ResourceServer(facilitatorClient)
-  .register(ALGORAND_TESTNET_CAIP2, avmScheme);
+  .register(ALGORAND_TESTNET_CAIP2_FULL, avmScheme);
 
 export const initializeResourceServer = async () => {
   try {
@@ -29,9 +31,9 @@ export const initializeResourceServer = async () => {
 
 // @ts-ignore
 const routes = {
-  "/services/ip-reputation": { accepts: [{ scheme: "exact", network: ALGORAND_TESTNET_CAIP2, payTo: config.avmAddress, price: { amount: "10000", asset: config.usdcAssetId } }] },
-  "/services/threat-intelligence": { accepts: [{ scheme: "exact", network: ALGORAND_TESTNET_CAIP2, payTo: config.avmAddress, price: { amount: "20000", asset: config.usdcAssetId } }] },
-  "/services/malware-analysis": { accepts: [{ scheme: "exact", network: ALGORAND_TESTNET_CAIP2, payTo: config.avmAddress, price: { amount: "30000", asset: config.usdcAssetId } }] }
+  "/services/ip-reputation": { accepts: [{ scheme: "exact", network: ALGORAND_TESTNET_CAIP2_FULL, payTo: config.avmAddress, price: { amount: "10000", asset: config.usdcAssetId }, extra: { feePayer: "ZMFK2OI7ZBD2U27ISERZC4S6LKM6WMFJPZQ4MYNJDZ2VNBNMBA67RA22AA" } }] },
+  "/services/threat-intelligence": { accepts: [{ scheme: "exact", network: ALGORAND_TESTNET_CAIP2_FULL, payTo: config.avmAddress, price: { amount: "20000", asset: config.usdcAssetId }, extra: { feePayer: "ZMFK2OI7ZBD2U27ISERZC4S6LKM6WMFJPZQ4MYNJDZ2VNBNMBA67RA22AA" } }] },
+  "/services/malware-analysis": { accepts: [{ scheme: "exact", network: ALGORAND_TESTNET_CAIP2_FULL, payTo: config.avmAddress, price: { amount: "30000", asset: config.usdcAssetId }, extra: { feePayer: "ZMFK2OI7ZBD2U27ISERZC4S6LKM6WMFJPZQ4MYNJDZ2VNBNMBA67RA22AA" } }] }
 };
 
 export const x402Middleware = paymentMiddleware(routes as any, resourceServer, undefined, undefined, false);

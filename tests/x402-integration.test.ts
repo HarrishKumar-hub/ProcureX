@@ -69,7 +69,7 @@ describe("x402 Integration Tests", () => {
       if (urlStr.includes("goplausible.xyz")) {
         if (urlStr.endsWith("/kinds") || urlStr.includes("/kinds?")) {
           return new Response(JSON.stringify({
-            kinds: [{ x402Version: 1, scheme: "exact", network: "algorand:SGO1GKSzyE7IEPItTxCByw9x8FmnrCDe" }]
+            kinds: [{ x402Version: 1, scheme: "exact", network: "algorand:SGO1GKSzyE7IEPItTxCByw9x8FmnrCDexi9/cOUJOiI=" }]
           }));
         }
         if (urlStr.endsWith("/verify") || urlStr.includes("/verify?")) {
@@ -81,7 +81,7 @@ describe("x402 Integration Tests", () => {
           return new Response(JSON.stringify({
             success: true,
             transaction: "D69A5E12E9903AB427A0C157E9CB403BA25FBC416B22D2ADB86A549B25FBC41C",
-            network: "algorand:SGO1GKSzyE7IEPItTxCByw9x8FmnrCDe"
+            network: "algorand:SGO1GKSzyE7IEPItTxCByw9x8FmnrCDexi9/cOUJOiI="
           }));
         }
       }
