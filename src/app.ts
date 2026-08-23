@@ -25,8 +25,7 @@ export const createApp = () => {
   const resourceRouter = createResourceRouter();
   app.use((req, res, next) => {
     if (req.path.startsWith("/services/")) {
-      const proto = req.headers["x-forwarded-proto"] || "http";
-      const fullUrl = `${proto}://${req.headers.host}${req.url}`;
+      const fullUrl = `http://localhost:3000${req.url}`;
       
       const headers = new Headers();
       Object.entries(req.headers).forEach(([k, v]) => {
@@ -45,7 +44,10 @@ export const createApp = () => {
       })).then(async (webRes) => {
         webRes.headers.forEach((val, key) => res.setHeader(key, val));
         res.status(webRes.status).send(await webRes.text());
-      }).catch(next);
+      }).catch((err) => {
+        console.error("Resource router error:", err);
+        next(err);
+      });
     }
     next();
   });
