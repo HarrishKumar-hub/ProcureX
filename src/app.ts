@@ -20,8 +20,9 @@ export const createApp = () => {
   
   app.use(cors(corsOptions));
   app.options(/.*/, cors(corsOptions));
+  app.use(express.json());
 
-  // Mount x402 resource router on main app BEFORE express.json()
+  // Mount x402 resource router on main app
   const resourceRouter = createResourceRouter();
   app.use(async (req, res, next) => {
     if (req.path.startsWith("/services/")) {
@@ -34,15 +35,7 @@ export const createApp = () => {
 
       let bodyData: any = undefined;
       if (req.method !== "GET" && req.method !== "HEAD") {
-        if (req.body !== undefined) {
-          bodyData = typeof req.body === "string" ? req.body : JSON.stringify(req.body);
-        } else {
-          const chunks: Uint8Array[] = [];
-          for await (const chunk of req) {
-            chunks.push(chunk);
-          }
-          bodyData = Buffer.concat(chunks).toString("utf-8") || undefined;
-        }
+        bodyData = typeof req.body === "string" ? req.body : JSON.stringify(req.body || {});
       }
 
       return resourceRouter.fetch(new Request(fullUrl, {
