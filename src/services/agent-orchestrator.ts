@@ -134,6 +134,15 @@ export class AgentOrchestrator {
           break;
         }
 
+        if (orchestrationRes.decision === "APPROVE" && orchestrationRes.paymentStatus === "FAILED") {
+          securityIncidentsBlocked.push({
+            providerId: provider.id,
+            reason: orchestrationRes.paymentExecution.message,
+            amount: provider.price
+          });
+          continue;
+        }
+
         if (orchestrationRes.decision === "APPROVE" && orchestrationRes.paymentStatus !== "FAILED") {
           // Successfully executed payment — pull real data from provider response
           totalSpent += provider.price;
