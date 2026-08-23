@@ -46,6 +46,50 @@ ProcureX is not a wallet or bank — it is the **missing governance judgment lay
 
 ---
 
+## Multi-Agent Roles & Inter-Agent Communication
+
+ProcureX operates as a multi-agent system where distinct autonomous agents interact, evaluate risk, and communicate over HTTP 402 and Algorand Testnet:
+
+### 1. Agent Roles & Identities
+
+- **SecurityAgent-01 (`4U63RU...RM7I`) — The Buyer Agent:**
+  An autonomous incident response agent responsible for executing investigations. It holds the buyer treasury in USDC and requests security capabilities.
+- **ProcureX Policy Engine Agent — The Supervisory Risk Agent:**
+  Sitting in front of the buyer wallet, this agent acts as an autonomous financial auditor. It intercepts every payment request pre-execution and enforces budget, trust, price anomaly, and velocity constraints.
+- **Autonomous Fallback Orchestrator — The Recovery Agent:**
+  When a malicious provider attempts price gouging, this agent trips the circuit breaker ($0 moved on-chain) and dynamically selects the next best trusted candidate provider to complete the task seamlessly.
+- **Provider Service Agents (`Q7WBPI...DXUY`) — The Seller Endpoint Agents:**
+  Independent service agents (`provider-ip-reputation` and `provider-threatintel`) registered on the GoPlausible Bazaar that expose x402-protected capabilities and deliver threat data upon receiving verified USDC payments.
+
+### 2. How Agents Communicate & Settle Payments
+
+```
+[User Goal] → SecurityAgent-01 (Planner)
+                  │
+                  ▼ (1. Payment Request)
+       ProcureX Policy Engine Agent
+         ├── Check 1: Budget Guard (PASS)
+         ├── Check 2: Single Tx Cap (PASS)
+         ├── Check 3: Trust Score Gate (PASS)
+         └── Check 4: Price Anomaly Cap (PASS)
+                  │
+                  ▼ (2. Pre-Execution Approval)
+     x402 AVM Client + GoPlausible Facilitator
+                  │
+                  ▼ (3. HTTP 402 + Payment Settlement)
+   Algorand Testnet (USDC Transfer: 4U63...RM7I → Q7WB...DXUY)
+                  │
+                  ▼ (4. Verified On-Chain Tx Proof)
+      Provider Service Agent (Data Release)
+```
+
+1. **Intent-to-Plan Handshake:** `SecurityAgent-01` decomposes high-level user intent into capability requests (`ip_reputation` → `threat_intelligence`).
+2. **Policy Evaluation Protocol:** `SecurityAgent-01` submits payment proposals to the `ProcureX Policy Engine`. The Policy Engine returns an `APPROVE`, `BLOCK`, or `REVIEW` decision.
+3. **x402 Pre-Settlement Negotiations:** Upon `APPROVE`, the x402 AVM client requests the target endpoint. The Provider Service Agent responds with `HTTP 402 Payment Required` detailing the exact USDC requirement.
+4. **On-Chain Settlement Handshake:** `SecurityAgent-01` signs an Algorand Testnet transaction transferred to the GoPlausible facilitator (`ZMFK4...552AA`). Once verified on-chain, the Provider Service Agent unlocks and returns threat payload data.
+
+---
+
 ## The Five Functional Layers of ProcureX
 
 ### Layer 1: Intent Parser & Economic Contract
