@@ -6,16 +6,16 @@ ProcureX is an autonomous economic policy engine and governance control plane de
 
 ---
 
-## 🚀 Live Deployments & Provenance
+## Live Deployments & Provenance
 
-- 🌐 **Live Web Application (Vercel):** [https://procure-x-mu.vercel.app](https://procure-x-mu.vercel.app)
-- ⚙️ **Live Control Plane API (Render):** [https://procurex-backend-2xox.onrender.com](https://procurex-backend-2xox.onrender.com)
-- 🔗 **Verified Algorand Testnet Settlement (`ip_reputation`):** [https://lora.algokit.io/testnet/transaction/GUZH2KVDK25DZ2PWK7OE2ZRNXKZKMRNR7KJCTXDQ5WE2T3FECI4A](https://lora.algokit.io/testnet/transaction/GUZH2KVDK25DZ2PWK7OE2ZRNXKZKMRNR7KJCTXDQ5WE2T3FECI4A)
-- 🔗 **Verified Algorand Testnet Settlement (`threat_intelligence`):** [https://lora.algokit.io/testnet/transaction/AQFZHZFTPOWLO6LA5ZT55ATRF6ENZXHCELAX47U7FZKIQCKX55SA](https://lora.algokit.io/testnet/transaction/AQFZHZFTPOWLO6LA5ZT55ATRF6ENZXHCELAX47U7FZKIQCKX55SA)
+- **Live Web Application (Vercel):** [https://procure-x-mu.vercel.app](https://procure-x-mu.vercel.app)
+- **Live Control Plane API (Render):** [https://procurex-backend-2xox.onrender.com](https://procurex-backend-2xox.onrender.com)
+- **Verified Algorand Testnet Settlement (`ip_reputation`):** [https://lora.algokit.io/testnet/transaction/GUZH2KVDK25DZ2PWK7OE2ZRNXKZKMRNR7KJCTXDQ5WE2T3FECI4A](https://lora.algokit.io/testnet/transaction/GUZH2KVDK25DZ2PWK7OE2ZRNXKZKMRNR7KJCTXDQ5WE2T3FECI4A)
+- **Verified Algorand Testnet Settlement (`threat_intelligence`):** [https://lora.algokit.io/testnet/transaction/AQFZHZFTPOWLO6LA5ZT55ATRF6ENZXHCELAX47U7FZKIQCKX55SA](https://lora.algokit.io/testnet/transaction/AQFZHZFTPOWLO6LA5ZT55ATRF6ENZXHCELAX47U7FZKIQCKX55SA)
 
 ---
 
-## 💡 Problem & Core Concept
+## Executive Summary & Core Concept
 
 As AI agents become autonomous economic actors authorized to spend funds, they face critical financial risks:
 - **Price Gouging Attacks:** Malicious API providers charging 100x markups for micro-services.
@@ -24,16 +24,16 @@ As AI agents become autonomous economic actors authorized to spend funds, they f
 
 ProcureX solves this by introducing a **Pre-Execution Economic Control Plane**:
 
-1. **Intent Parser & Planner:** Translates human intents (e.g. *"Investigate suspicious IP 185.220.101.1"*) into structured multi-step procurement plans (`ip_reputation` → `threat_intelligence`).
-2. **Economic Policy Engine & Risk Breakdown:** Evaluates candidates against strict risk bounds *before* initiating any payment or network request:
-   - **Trust Score Gate:** Provider trust score must exceed threshold (e.g. `≥90/100`).
-   - **Price Anomaly Cap:** Current price cannot exceed historical average multiplier (e.g. `≤5x`).
-   - **Velocity Limit:** Maximum request frequency (e.g. `≤10 tx/min`).
+1. **Intent Parser & Planner:** Translates natural language human intents (e.g., *"Investigate suspicious IP 185.220.101.1"*) into structured multi-step procurement plans (`ip_reputation` → `threat_intelligence`).
+2. **Economic Policy Engine & Risk Breakdown:** Evaluates candidate providers against strict risk bounds *before* initiating any payment or network request:
+   - **Trust Score Gate:** Provider trust score must exceed threshold (e.g., `≥90/100`).
+   - **Price Anomaly Cap:** Current price cannot exceed historical average multiplier (e.g., `≤5x`).
+   - **Velocity Limit:** Maximum request frequency (e.g., `≤10 tx/min`).
 3. **Circuit Breaker & Autonomous Fallback:** If a provider fails policy evaluation (e.g., a $2.00 price-gouging attack), ProcureX blocks payment pre-execution and automatically fallback-routes to the next best trusted provider.
 
 ---
 
-## 🏗️ Architecture & Policy Evaluation Flow
+## System Architecture & Policy Evaluation Flow
 
 ```mermaid
 flowchart TD
@@ -64,7 +64,7 @@ flowchart TD
 
 ---
 
-## 🛠️ Tech Stack
+## Technical Architecture & Component Hierarchy
 
 - **Blockchain & Micro-Payments:** Algorand Testnet, USDC (Asset `10458941`), `@x402/avm`, `@x402/fetch`, GoPlausible Facilitator (`ZMFK...2AA`).
 - **Backend Service:** TypeScript, Node.js, Express, Hono, Vitest.
@@ -73,13 +73,13 @@ flowchart TD
 
 ---
 
-## 💻 Local Setup & Testing
+## Local Environment & Deployment
 
 ### Prerequisites
 - Node.js `v20.x` or higher
 - `npm`
 
-### 1. Installation & Environment
+### 1. Installation & Environment Configuration
 ```bash
 git clone https://github.com/HarrishKumar-hub/ProcureX.git
 cd ProcureX
@@ -98,19 +98,19 @@ VIRUSTOTAL_API_KEY=d2abe2a28194acc69a8aa82d2a51b78302c6e3e2e162d125ab46aeb303a90
 SHODAN_API_KEY=OioGihq4TtaqMbTB0rRcVfiUhrironaC
 ```
 
-### 2. Run Test Suite
+### 2. Test Execution
 ```bash
 npm run test
 ```
 *Executes all 27 unit & integration tests across policy evaluation, fallback routing, and risk breakdown.*
 
-### 3. Run Local Development Server
+### 3. Backend Control Plane Development Server
 ```bash
 npm run dev
 ```
 The backend and x402 resource server will start unified on `http://localhost:3000`.
 
-### 4. Run Frontend Dashboard Locally
+### 4. Frontend Dashboard Development Server
 ```bash
 cd frontend
 npm install
