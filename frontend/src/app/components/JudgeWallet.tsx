@@ -1,13 +1,59 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { PeraWalletConnect } from "@perawallet/connect";
+
+let peraWallet: PeraWalletConnect | null = null;
+
+if (typeof window !== "undefined") {
+  try {
+    peraWallet = new PeraWalletConnect({ shouldShowSignTxnToast: false });
+  } catch {
+    // Ignore init error
+  }
+}
 
 export default function JudgeWallet() {
   const [isOpen, setIsOpen] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const [connectedAddress, setConnectedAddress] = useState<string | null>(null);
 
-  const handleConnect = () => {
+  useEffect(() => {
+    if (peraWallet) {
+      peraWallet
+        .reconnectSession()
+        .then((accounts) => {
+          if (accounts && accounts.length > 0) {
+            setConnectedAddress(accounts[0]);
+          }
+        })
+        .catch(() => {
+          // Silent fallback
+        });
+    }
+  }, []);
+
+  const handlePeraConnect = async () => {
+    if (!peraWallet) {
+      setIsOpen(true);
+      return;
+    }
+    try {
+      const newAccounts = await peraWallet.connect();
+      if (newAccounts && newAccounts.length > 0) {
+        setConnectedAddress(newAccounts[0]);
+        setIsOpen(false);
+        return;
+      }
+    } catch (err: any) {
+      if (err?.data?.type !== "CONNECT_MODAL_CLOSED") {
+        // Fall back to manual modal on error
+        setIsOpen(true);
+      }
+    }
+  };
+
+  const handleManualConnect = () => {
     const trimmed = inputValue.trim();
     if (trimmed.length > 10) {
       setConnectedAddress(trimmed);
@@ -21,7 +67,14 @@ export default function JudgeWallet() {
     setInputValue("");
   };
 
-  const handleDisconnect = () => {
+  const handleDisconnect = async () => {
+    try {
+      if (peraWallet) {
+        await peraWallet.disconnect();
+      }
+    } catch {
+      // Ignore
+    }
     setConnectedAddress(null);
   };
 
@@ -29,15 +82,15 @@ export default function JudgeWallet() {
     <>
       {connectedAddress === null ? (
         <button
-          onClick={() => setIsOpen(true)}
-          className="hidden sm:flex items-center gap-2 bg-white hover:bg-neutral-50 rounded-full ring-1 ring-neutral-200 px-4 py-2 text-xs font-medium text-neutral-600 transition-colors"
+          onClick={handlePeraConnect}
+          className="hidden sm:flex items-center gap-2 bg-white hover:bg-neutral-50 rounded-full ring-1 ring-neutral-200 px-4 py-2 text-xs font-medium text-neutral-600 transition-colors cursor-pointer"
         >
           Connect Wallet
         </button>
       ) : (
         <button
           onClick={handleDisconnect}
-          className="flex items-center gap-2 bg-white hover:bg-neutral-50 rounded-full ring-1 ring-neutral-200 px-3 py-1.5 transition-colors"
+          className="flex items-center gap-2 bg-white hover:bg-neutral-50 rounded-full ring-1 ring-neutral-200 px-3 py-1.5 transition-colors cursor-pointer"
         >
           <span className="w-2 h-2 rounded-full bg-green-400"></span>
           <span className="text-xs font-mono font-medium text-neutral-900">
@@ -64,13 +117,13 @@ export default function JudgeWallet() {
             <div className="flex gap-2 justify-end">
               <button
                 onClick={handleCancel}
-                className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 rounded-lg transition-colors"
+                className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 rounded-lg transition-colors cursor-pointer"
               >
                 Cancel
               </button>
               <button
-                onClick={handleConnect}
-                className="px-4 py-2 text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-colors"
+                onClick={handleManualConnect}
+                className="px-4 py-2 text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-colors cursor-pointer"
               >
                 Connect
               </button>
