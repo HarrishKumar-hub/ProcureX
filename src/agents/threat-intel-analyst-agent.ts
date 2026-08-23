@@ -6,9 +6,12 @@ export interface ThreatAnalystJudgment {
 }
 
 export async function analyzeThreatData(rawVirusTotalData: any, ip: string): Promise<ThreatAnalystJudgment> {
-  const malicious = rawVirusTotalData.maliciousCount ?? 0;
-  const suspicious = rawVirusTotalData.suspiciousCount ?? 0;
-  const total = rawVirusTotalData.totalEngines ?? 0;
+  const stats = rawVirusTotalData?.lastAnalysisStats || {};
+  const malicious = rawVirusTotalData?.maliciousCount ?? stats.malicious ?? 0;
+  const suspicious = rawVirusTotalData?.suspiciousCount ?? stats.suspicious ?? 0;
+  const total = rawVirusTotalData?.totalEngines ?? (
+    (stats.malicious || 0) + (stats.suspicious || 0) + (stats.harmless || 0) + (stats.undetected || 0)
+  ) ?? 0;
 
   const maliciousRatio = total > 0 ? malicious / total : 0;
 
@@ -20,7 +23,7 @@ export async function analyzeThreatData(rawVirusTotalData: any, ip: string): Pro
     confidenceLevel = "HIGH";
     recommendedAction = "ESCALATE";
     assessment = `Independent analysis flags ${malicious} of ${total} engines reporting malicious activity for ${ip} — recommend escalation.`;
-  } else if (maliciousRatio > 0.05 || suspicious > 0) {
+  } else if (maliciousRatio > 0.05 || suspicious > 0 || malicious > 0) {
     confidenceLevel = "MEDIUM";
     recommendedAction = "MONITOR";
     assessment = `Independent analysis finds moderate risk signals for ${ip} (${malicious} malicious, ${suspicious} suspicious of ${total} engines) — recommend continued monitoring.`;
