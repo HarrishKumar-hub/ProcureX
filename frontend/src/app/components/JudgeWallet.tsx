@@ -5,31 +5,30 @@ import { PeraWalletConnect } from "@perawallet/connect";
 
 let peraWallet: PeraWalletConnect | null = null;
 
-if (typeof window !== "undefined") {
-  try {
-    peraWallet = new PeraWalletConnect({ shouldShowSignTxnToast: false });
-  } catch {
-    // Ignore init error
-  }
-}
-
 export default function JudgeWallet() {
   const [isOpen, setIsOpen] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const [connectedAddress, setConnectedAddress] = useState<string | null>(null);
 
   useEffect(() => {
-    if (peraWallet) {
-      peraWallet
-        .reconnectSession()
-        .then((accounts) => {
-          if (accounts && accounts.length > 0) {
-            setConnectedAddress(accounts[0]);
-          }
-        })
-        .catch(() => {
-          // Silent fallback
-        });
+    try {
+      if (!peraWallet && typeof window !== "undefined") {
+        peraWallet = new PeraWalletConnect({ shouldShowSignTxnToast: false });
+      }
+      if (peraWallet) {
+        peraWallet
+          .reconnectSession()
+          .then((accounts: string[]) => {
+            if (accounts && accounts.length > 0) {
+              setConnectedAddress(accounts[0]);
+            }
+          })
+          .catch(() => {
+            // Silent fallback
+          });
+      }
+    } catch {
+      // Ignore init error
     }
   }, []);
 
