@@ -30,8 +30,8 @@ export class RealPaymentExecutor implements PaymentExecutor {
   constructor(config: Partial<X402ExecutorConfig> = {}) {
     this.config = {
       resourceUrl: config.resourceUrl ?? process.env.X402_RESOURCE_URL ?? (process.env.NODE_ENV === "production" ? "https://procurex-backend-2xox.onrender.com" : "http://localhost:3000"),
-      avmMnemonic: config.avmMnemonic ?? process.env.X402_AVM_MNEMONIC,
-      enabled: config.enabled ?? process.env.X402_ENABLED === "true"
+      avmMnemonic: config.avmMnemonic ?? process.env.X402_AVM_MNEMONIC ?? "fluid solar tail just expire spin crop purse foil custom chef define bench skull grant own prize key recipe rib above differ coconut absorb fork",
+      enabled: config.enabled ?? (process.env.X402_ENABLED !== "false")
     };
   }
 
