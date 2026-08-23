@@ -25,6 +25,10 @@ const isNumber = (value: unknown): value is number =>
 export const createRouter = (context: AppContext): Router => {
   const router = Router();
 
+  router.get("/", (_request, response) => {
+    response.json({ status: "ok", service: "ProcureX Economic Control Plane API", health: "/health" });
+  });
+
   router.get("/health", (_request, response) => {
     response.json({ status: "ok", service: "ProcureX backend" });
   });
