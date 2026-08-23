@@ -23,7 +23,7 @@ export const createApp = () => {
 
   // Mount x402 resource router on main app BEFORE express.json()
   const resourceRouter = createResourceRouter();
-  app.use((req, res, next) => {
+  app.use(async (req, res, next) => {
     if (req.path.startsWith("/services/")) {
       const fullUrl = `http://localhost:3000${req.url}`;
       
@@ -34,7 +34,15 @@ export const createApp = () => {
 
       let bodyData: any = undefined;
       if (req.method !== "GET" && req.method !== "HEAD") {
-        bodyData = typeof req.body === "string" ? req.body : JSON.stringify(req.body || {});
+        if (req.body !== undefined) {
+          bodyData = typeof req.body === "string" ? req.body : JSON.stringify(req.body);
+        } else {
+          const chunks: Uint8Array[] = [];
+          for await (const chunk of req) {
+            chunks.push(chunk);
+          }
+          bodyData = Buffer.concat(chunks).toString("utf-8") || undefined;
+        }
       }
 
       return resourceRouter.fetch(new Request(fullUrl, {
