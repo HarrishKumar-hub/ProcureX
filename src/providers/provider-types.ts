@@ -18,4 +18,5 @@ export interface ProviderMetadata extends Provider {
 
 export interface PaidServiceProvider {
   getMetadata(): ProviderMetadata;
+  execute?(input: ServiceInput): Promise<Record<string, unknown>>;
 }

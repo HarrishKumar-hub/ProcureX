@@ -12,7 +12,7 @@ export class MockPaymentExecutor implements PaymentExecutor {
     let providerResponse: any = undefined;
     if (this.providerRegistry) {
       const provider = this.providerRegistry.getById(request.providerId);
-      if (provider) {
+      if (provider && typeof provider.execute === "function") {
         try {
           providerResponse = await provider.execute({ ip: request.targetIp ?? "185.220.101.1" });
         } catch {
