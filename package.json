@@ -7,7 +7,7 @@
     "dev:provider": "tsx watch src/x402/resource-server/server.ts",
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc --noEmit",
-    "start": "node dist/server.js",
+    "start": "tsx src/server.ts",
     "test": "vitest run",
     "test:x402": "vitest run x402-integration"
   },
@@ -27,12 +27,12 @@
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
-    "hono": "*"
+    "hono": "*",
+    "tsx": "^4.23.12"
   },
   "devDependencies": {
     "@types/express": "^5.0.6",
     "@types/node": "^26.2.0",
-    "tsx": "^4.23.12",
     "typescript": "^5.9.3",
     "vitest": "^4.1.10"
   }
