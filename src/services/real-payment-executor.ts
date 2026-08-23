@@ -134,7 +134,7 @@ export class RealPaymentExecutor implements PaymentExecutor {
     return {
       paymentStatus: "FAILED",
       executionMode: mode,
-      message: `x402 execution failed after ${maxRetries} attempts. Last error: ${lastError?.message || "Unknown error"}`
+      message: `x402 execution failed after ${maxRetries} attempts on target ${endpointUrl}. Last error: ${lastError?.message || lastError || "Unknown error"}`
     };
   }
 
