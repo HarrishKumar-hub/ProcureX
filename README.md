@@ -15,25 +15,97 @@ ProcureX is an autonomous economic policy engine and governance control plane de
 
 ---
 
-## Executive Summary & Core Concept
+## Executive Summary & Deep Dive Concept
 
-As AI agents become autonomous economic actors authorized to spend funds, they face critical financial risks:
-- **Price Gouging Attacks:** Malicious API providers charging 100x markups for micro-services.
-- **Runaway Agent Loops:** Unchecked agent retries exhausting balances within minutes.
-- **Untrusted Providers:** Low-reputation data sources draining agent treasuries without delivering value.
+### 1. The World Before ProcureX
+The web protocol (HTTP) was designed without a native payment layer. Every online transaction required leaving the application flow, entering credit card details on checkout pages, and waiting for human approval.
 
-ProcureX solves this by introducing a **Pre-Execution Economic Control Plane**:
+HTTP status code **402 (Payment Required)** existed since 1991 but was never implemented. **x402 on Algorand** finally implements HTTP 402, enabling machine-to-machine commerce where servers say *"pay me first, then I'll release the data"* and AI agents pay automatically without human intervention.
 
-1. **Intent Parser & Planner:** Translates natural language human intents (e.g., *"Investigate suspicious IP 185.220.101.1"*) into structured multi-step procurement plans (`ip_reputation` → `threat_intelligence`).
-2. **Economic Policy Engine & Risk Breakdown:** Evaluates candidate providers against strict risk bounds *before* initiating any payment or network request:
-   - **Trust Score Gate:** Provider trust score must exceed threshold (e.g., `≥90/100`).
-   - **Price Anomaly Cap:** Current price cannot exceed historical average multiplier (e.g., `≤5x`).
-   - **Velocity Limit:** Maximum request frequency (e.g., `≤10 tx/min`).
-3. **Circuit Breaker & Autonomous Fallback:** If a provider fails policy evaluation (e.g., a $2.00 price-gouging attack), ProcureX blocks payment pre-execution and automatically fallback-routes to the next best trusted provider.
+### 2. The Critical Risk x402 Introduces
+When humans pay, natural safeguards exist:
+- Seeing prices before clicking
+- Bank fraud detection and daily spending limits
+- Human judgment and dispute resolution
+
+When an AI agent pays autonomously, **none of these exist.** An agent encountering an HTTP 402 response will sign and pay automatically. It cannot natively determine if a provider is malicious, charging a 100x markup, or draining its treasury in runaway loops. This represents the **economic attack surface of agentic AI**.
+
+### 3. What ProcureX Actually Is
+ProcureX is an **Economic Control Plane** — a financial decision and risk auditing layer sitting between the AI agent's brain and the x402 payment execution.
+
+```
+Without ProcureX:
+AI Agent → Encounters 402 → Pays Automatically → Risk of Treasury Depletion
+
+With ProcureX:
+AI Agent → Encounters 402 → ProcureX Policy Engine Evaluates → 
+[APPROVE / BLOCK / REVIEW] → Pays Only If Safe
+```
+
+ProcureX is not a wallet or bank — it is the **missing governance judgment layer** for machine economies.
 
 ---
 
-## System Architecture & Policy Evaluation Flow
+## The Five Functional Layers of ProcureX
+
+### Layer 1: Intent Parser & Economic Contract
+Translates natural language user goals (e.g., *"Investigate suspicious IP 185.220.101.1 with $0.20 budget"*) into structured multi-capability procurement plans:
+```json
+{
+  "target": "185.220.101.1",
+  "budget": 0.20,
+  "requiredCapabilities": ["ip_reputation", "threat_intelligence"]
+}
+```
+This parsed intent becomes an unalterable economic contract against which every downstream payment request is validated.
+
+### Layer 2: Provider Discovery & Market Ranking
+Queries the live GoPlausible Bazaar registry on Algorand to discover endpoints offering required capabilities, ranking candidate providers by trust score, reputation, historical price, and compatibility.
+
+### Layer 3: Economic Policy Engine (Pre-Execution Audit)
+Before any network request or payment signature occurs, every request must pass 5 deterministic policy checks:
+1. **Budget Guard:** Remaining task budget must cover requested cost (`$0.02 ≤ $0.20`).
+2. **Single Transaction Cap:** Single payment must not exceed policy max (`$0.02 ≤ $0.05`).
+3. **Trust Score Gate:** Provider reputation score must exceed minimum (`97 ≥ 90/100`).
+4. **Price Anomaly Cap:** Requested price cannot exceed 5x historical average multiplier (`$0.02 ≤ $0.10`).
+5. **Task Relevance:** Requested service category must strictly match intent requirements.
+
+### Layer 4: Circuit Breaker & Autonomous Fallback
+If a provider fails any check (e.g., a $2.00 price-gouging attack representing a 100x markup):
+- The **Circuit Breaker** trips pre-execution ($0 moves on-chain).
+- A security incident is logged.
+- The system automatically selects and evaluates the next best candidate provider ($0.018).
+- The task completes safely without crashing or requiring human intervention.
+
+### Layer 5: Algorand x402 Settlement
+Only after all policy checks pass does ProcureX trigger settlement:
+- Signs USDC (ASA `10458941`) payment via buyer wallet (`4U63...RM7I`).
+- Broadcasts via GoPlausible Facilitator (`ZMFK...2AA`).
+- Algorand Testnet settles transaction and returns verified TxID.
+- Provider unlocks and returns threat data.
+
+---
+
+## Attack Scenario Analysis
+
+```
+Normal Threat Intel Market Rate: $0.02 USDC
+Malicious Provider Requested Price: $2.00 USDC (100x Markup)
+
+Without ProcureX:
+AI Agent receives HTTP 402 → Signs $2.00 → Wallet Drained ($200 loss across 100 requests)
+
+With ProcureX:
+AI Agent receives HTTP 402 → Policy Engine Evaluates:
+  - $2.00 > $0.05 Single Tx Cap → BLOCKED
+  - $2.00 = 100x Anomaly (Cap: 5x) → BLOCKED
+Circuit Breaker Fires → $0 Moved → Fallback Provider Evaluated ($0.018) → Task Completed
+Attacker Revenue: $0 | Treasury Saved: $2.00
+```
+
+---
+
+## System Architecture & Policy Flow
 
 ```mermaid
 flowchart TD
@@ -64,22 +136,22 @@ flowchart TD
 
 ---
 
-## Technical Architecture & Component Hierarchy
+## Technical Stack
 
 - **Blockchain & Micro-Payments:** Algorand Testnet, USDC (Asset `10458941`), `@x402/avm`, `@x402/fetch`, GoPlausible Facilitator (`ZMFK...2AA`).
-- **Backend Service:** TypeScript, Node.js, Express, Hono, Vitest.
+- **Backend Control Plane:** TypeScript, Node.js, Express, Hono, Vitest.
 - **Frontend Dashboard:** Next.js (App Router), Tailwind CSS, Lucide React, Algonode Indexer API.
 - **Real Security APIs:** AbuseIPDB API v2, VirusTotal API v3, Shodan Host API.
 
 ---
 
-## Local Environment & Deployment
+## Local Environment & Setup
 
 ### Prerequisites
 - Node.js `v20.x` or higher
 - `npm`
 
-### 1. Installation & Environment Configuration
+### 1. Installation
 ```bash
 git clone https://github.com/HarrishKumar-hub/ProcureX.git
 cd ProcureX
@@ -98,19 +170,18 @@ VIRUSTOTAL_API_KEY=d2abe2a28194acc69a8aa82d2a51b78302c6e3e2e162d125ab46aeb303a90
 SHODAN_API_KEY=OioGihq4TtaqMbTB0rRcVfiUhrironaC
 ```
 
-### 2. Test Execution
+### 2. Unit & Integration Test Suite
 ```bash
 npm run test
 ```
 *Executes all 27 unit & integration tests across policy evaluation, fallback routing, and risk breakdown.*
 
-### 3. Backend Control Plane Development Server
+### 3. Backend Control Plane Server
 ```bash
 npm run dev
 ```
-The backend and x402 resource server will start unified on `http://localhost:3000`.
 
-### 4. Frontend Dashboard Development Server
+### 4. Frontend Dashboard
 ```bash
 cd frontend
 npm install
