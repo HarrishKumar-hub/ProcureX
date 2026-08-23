@@ -45,6 +45,33 @@ ProcureX leverages **Algorand Testnet** and the **GoPlausible Facilitator** (`ZM
 - **Standardized Asset Settlement (USDC ASA `10458941`):** Payments settle natively in testnet USDC using Algorand Standard Asset (ASA) exact transfer schemes.
 - **GoPlausible Facilitator Architecture:** Ensures atomic verification where buyer payment signatures and seller data release occur trustlessly with verifiable transaction proofs (`TxID`) indexed on Lora Explorer.
 
+```mermaid
+flowchart TD
+    User([User / Intent Input]) -->|1. Submit Task| Planner[Agent Planner & Discovery]
+    Planner -->|2. Rank Providers| Engine[Economic Policy Engine]
+    
+    subgraph Risk Evaluation [Pre-Execution Risk Breakdown]
+        Engine --> Check1{Trust Score ≥ 90?}
+        Check1 -- Yes --> Check2{Price Multiplier ≤ 5x?}
+        Check2 -- Yes --> Check3{Velocity ≤ 10/min?}
+        Check1 -- No (Block) --> Fallback[Circuit Breaker & Fallback]
+        Check2 -- No (Block $2.00 Gouging) --> Fallback
+        Check3 -- No (Block) --> Fallback
+    end
+    
+    Fallback -->|Retry Next Candidate| Engine
+    Check3 -- Pass (Approved) --> X402[x402 AVM Payment Client]
+    
+    subgraph Algorand Settlement [On-Chain Execution]
+        X402 -->|4. HTTP 402 + Payment-Required| Fac[GoPlausible Facilitator]
+        Fac -->|5. Sign & Settle USDC| Algo[(Algorand Testnet)]
+        Algo -->|6. Payment Verified| Resource[x402 Resource Server]
+    end
+    
+    Resource -->|7. Fetch Real Threat Data| ThreatAPIs[AbuseIPDB / VirusTotal]
+    ThreatAPIs -->|8. Return Security Findings| UI[Dashboard & Event Log UI]
+```
+
 ---
 
 ## 4. Execution & Provenance
