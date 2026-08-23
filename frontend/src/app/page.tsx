@@ -1,8 +1,10 @@
 "use client";
 
-import { useState } from "react";
-import { ShieldCheck, Activity, Database, Banknote, CheckCircle2, XCircle, AlertTriangle, Play, RefreshCw, Cpu, Gauge, Users } from "lucide-react";
+import { useEffect, useState } from "react";
+import { ShieldCheck, Activity, Database, Banknote, CheckCircle2, XCircle, AlertTriangle, Play, RefreshCw, Cpu, Gauge, Users, Wallet } from "lucide-react";
 import { runInvestigation, OrchestrationResult } from "@/lib/api";
+
+const AGENT_ADDRESS = "4U63RU6G52MUBG4QTYAJKG4ZBZ55Z4BXQUA3RTDNLVTOV7KLTWZNKKRM7I";
 
 export default function Dashboard() {
   const [targetIp, setTargetIp] = useState("185.10.20.30");
@@ -10,8 +12,29 @@ export default function Dashboard() {
   const [isInvestigating, setIsInvestigating] = useState(false);
   const [result, setResult] = useState<OrchestrationResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [walletBalance, setWalletBalance] = useState<string | null>(null);
 
   const [feedSteps, setFeedSteps] = useState<Array<{ type: string; message: string }>>([]);
+
+  const fetchBalance = async () => {
+    try {
+      const res = await fetch(`https://testnet-idx.algonode.cloud/v2/accounts/${AGENT_ADDRESS}`);
+      if (res.ok) {
+        const data = await res.json();
+        const usdcAsset = (data.account?.assets || []).find((a: any) => a["asset-id"] === 10458941);
+        if (usdcAsset) {
+          const formatted = (usdcAsset.amount / 1_000_000).toFixed(2);
+          setWalletBalance(formatted);
+        }
+      }
+    } catch {
+      // Graceful fallback if indexer is slow
+    }
+  };
+
+  useEffect(() => {
+    fetchBalance();
+  }, []);
 
   const handleRun = async () => {
     setIsInvestigating(true);
@@ -45,6 +68,7 @@ export default function Dashboard() {
       }
 
       setResult(data);
+      fetchBalance();
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -102,6 +126,27 @@ export default function Dashboard() {
             </span>
             <span className="text-xs font-medium text-neutral-600">Algorand TestNet</span>
           </div>
+
+          {/* Live Agent Wallet Header Card */}
+          <a
+            href={`https://lora.algokit.io/testnet/account/${AGENT_ADDRESS}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2.5 bg-white hover:bg-neutral-50 rounded-full ring-1 ring-neutral-200 pl-2.5 pr-4 py-1.5 transition-colors"
+          >
+            <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center">
+              <Wallet className="w-4 h-4 text-emerald-700" />
+            </div>
+            <div className="leading-tight">
+              <div className="text-xs font-mono font-semibold text-neutral-900">
+                {AGENT_ADDRESS.slice(0, 4)}...{AGENT_ADDRESS.slice(-4)}
+              </div>
+              <div className="text-[11px] font-medium text-emerald-600">
+                {walletBalance ? `${walletBalance} USDC` : "Loading..."}
+              </div>
+            </div>
+          </a>
+
           <div className="flex items-center gap-2.5 bg-white rounded-full ring-1 ring-neutral-200 pl-2 pr-4 py-1.5">
             <div className="w-8 h-8 rounded-full bg-brand-100 flex items-center justify-center">
               <ShieldCheck className="w-4 h-4 text-brand-600" />
