@@ -138,6 +138,7 @@ export class AgentOrchestrator {
 
         if (orchestrationRes.decision === "APPROVE" && orchestrationRes.paymentStatus === "FAILED") {
           lastProviderError = orchestrationRes.paymentExecution?.message || orchestrationRes.explanation;
+          console.error(`Provider payment execution failed for ${provider.id}: ${lastProviderError}`);
           securityIncidentsBlocked.push({
             providerId: provider.id,
             reason: lastProviderError,
