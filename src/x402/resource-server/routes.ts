@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { x402Middleware } from "./middleware";
 import { discoveryMetadata } from "./discovery";
+import { analyzeThreatData } from "../../agents/threat-intel-analyst-agent";
 
 // ── Real API calls with graceful fallback ──────────────────────────────
 
@@ -159,7 +160,12 @@ export const createResourceRouter = () => {
   registerRoute("/services/threat-intelligence", async (c) => {
     const body = await c.req.json().catch(() => ({}));
     const ip = body.targetIp || body.ip || "unknown";
-    const result = await executeThreatIntelligence(ip);
+    const result: any = await executeThreatIntelligence(ip);
+    try {
+      result.analystJudgment = await analyzeThreatData(result, ip);
+    } catch {
+      // Graceful degradation
+    }
     return c.json({ result });
   });
 

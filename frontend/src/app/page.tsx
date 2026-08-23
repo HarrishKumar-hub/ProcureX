@@ -65,6 +65,14 @@ export default function Dashboard() {
         await new Promise((r) => setTimeout(r, 600));
         setFeedSteps((prev) => [...prev, { type: "EXECUTION", message: `Successfully executed ${step.category}.` }]);
         await new Promise((r) => setTimeout(r, 600));
+        if (step.result?.analystJudgment) {
+          const j = step.result.analystJudgment;
+          setFeedSteps((prev) => [...prev, { 
+            type: "ANALYSIS", 
+            message: `Agent Analysis (${j.agentId}): ${j.assessment} [confidence: ${j.confidenceLevel}]` 
+          }]);
+          await new Promise((r) => setTimeout(r, 600));
+        }
       }
 
       setResult(data);
@@ -84,6 +92,7 @@ export default function Dashboard() {
       case "BLOCKED": return <XCircle className="w-3.5 h-3.5" />;
       case "RECOVERY": return <RefreshCw className="w-3.5 h-3.5" />;
       case "EXECUTION": return <Banknote className="w-3.5 h-3.5" />;
+      case "ANALYSIS": return <Cpu className="w-3.5 h-3.5" />;
       default: return <Activity className="w-3.5 h-3.5" />;
     }
   };
@@ -96,6 +105,7 @@ export default function Dashboard() {
       case "BLOCKED": return "text-red-700 bg-red-50";
       case "RECOVERY": return "text-amber-700 bg-amber-50";
       case "EXECUTION": return "text-brand-700 bg-brand-50";
+      case "ANALYSIS": return "text-purple-700 bg-purple-50";
       default: return "text-neutral-500 bg-neutral-100";
     }
   };
@@ -243,7 +253,8 @@ export default function Dashboard() {
                       <span className={
                         step.type === "APPROVED" || step.type === "EXECUTION" ? "text-emerald-700 font-medium" :
                         step.type === "BLOCKED" ? "text-red-700 font-medium" :
-                        step.type === "PLANNING" ? "text-blue-700" : "text-neutral-600"
+                        step.type === "PLANNING" ? "text-blue-700" :
+                        step.type === "ANALYSIS" ? "text-purple-700 font-medium" : "text-neutral-600"
                       }>
                         {step.message}
                       </span>
