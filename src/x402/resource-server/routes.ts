@@ -144,21 +144,26 @@ export const createResourceRouter = () => {
   app.get("/.well-known/bazaar", (c) => c.json(discoveryMetadata));
 
   // The protected endpoints — payment is settled by x402Middleware BEFORE these run
-  app.post("/services/ip-reputation", x402Middleware, async (c) => {
+  const registerRoute = (path: string, handler: (c: any) => Promise<any>) => {
+    app.post(path, x402Middleware, handler);
+    app.post(path.replace("/services/", "/"), x402Middleware, handler);
+  };
+
+  registerRoute("/services/ip-reputation", async (c) => {
     const body = await c.req.json().catch(() => ({}));
     const ip = body.targetIp || body.ip || "unknown";
     const result = await executeIpReputation(ip);
     return c.json({ result });
   });
 
-  app.post("/services/threat-intelligence", x402Middleware, async (c) => {
+  registerRoute("/services/threat-intelligence", async (c) => {
     const body = await c.req.json().catch(() => ({}));
     const ip = body.targetIp || body.ip || "unknown";
     const result = await executeThreatIntelligence(ip);
     return c.json({ result });
   });
 
-  app.post("/services/malware-analysis", x402Middleware, async (c) => {
+  registerRoute("/services/malware-analysis", async (c) => {
     const body = await c.req.json().catch(() => ({}));
     const ip = body.targetIp || body.ip || "unknown";
     const result = await executeMalwareAnalysis(ip);
