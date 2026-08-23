@@ -155,7 +155,8 @@ export class AgentOrchestrator {
       }
 
       if (!stepCompleted && !isReviewRequired) {
-        throw new Error(`All fallback providers blocked or failed for capability: ${step.category}`);
+        const lastReason = securityIncidentsBlocked[securityIncidentsBlocked.length - 1]?.reason || "Payment execution returned non-APPROVED or FAILED status";
+        throw new Error(`All fallback providers blocked or failed for capability: ${step.category}. Details: ${lastReason}`);
       }
     }
 
