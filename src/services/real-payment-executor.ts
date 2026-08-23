@@ -67,7 +67,8 @@ export class RealPaymentExecutor implements PaymentExecutor {
       };
     }
 
-    const endpointUrl = `${this.config.resourceUrl}/services/${request.serviceCategory.replace("_", "-")}`;
+    const categoryPath = request.serviceCategory === "threat_intelligence" ? "threat-intelligence" : request.serviceCategory.replace("_", "-");
+    const endpointUrl = `${this.config.resourceUrl}/services/${categoryPath}`;
 
     // Retry configuration
     const maxRetries = 2; // Initial try + 1 retry
