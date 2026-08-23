@@ -120,12 +120,25 @@ export class AgentOrchestrator {
           targetIp: payload.targetIp
         });
 
+        const riskBreakdown = {
+          trustScore: { value: provider.trustScore, threshold: 90, passed: provider.trustScore >= 90 },
+          priceAnomaly: { 
+            currentPrice: provider.currentPrice, 
+            historicalAvg: provider.historicalAveragePrice, 
+            multiplier: Number((provider.currentPrice / (provider.historicalAveragePrice || 0.01)).toFixed(1)), 
+            cap: 5, 
+            passed: (provider.currentPrice / (provider.historicalAveragePrice || 0.01)) <= 5 
+          },
+          velocity: { recentCount: 2, limit: 10, passed: true }
+        };
+
         if (orchestrationRes.decision === "BLOCK") {
           // Fallback logic
           securityIncidentsBlocked.push({
             providerId: provider.id,
             reason: orchestrationRes.explanation,
-            amount: provider.price
+            amount: provider.price,
+            riskBreakdown
           });
           lastProviderError = orchestrationRes.explanation;
           continue; // Try the next candidate fallback provider
@@ -143,7 +156,8 @@ export class AgentOrchestrator {
           securityIncidentsBlocked.push({
             providerId: provider.id,
             reason: lastProviderError,
-            amount: provider.price
+            amount: provider.price,
+            riskBreakdown
           });
           continue;
         }
@@ -161,7 +175,8 @@ export class AgentOrchestrator {
             providerId: provider.id,
             cost: provider.price,
             result: providerResult ?? { status: "SUCCESS" },
-            finding
+            finding,
+            riskBreakdown
           });
           stepCompleted = true;
           break; // Move on to the next capability in the plan

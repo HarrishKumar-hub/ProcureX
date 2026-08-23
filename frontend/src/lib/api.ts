@@ -20,11 +20,21 @@ export interface OrchestrationResult {
     providerId: string;
     cost: number;
     result: any;
+    riskBreakdown?: {
+      trustScore: { value: number; threshold: number; passed: boolean };
+      priceAnomaly: { currentPrice: number; historicalAvg: number; multiplier: number; cap: number; passed: boolean };
+      velocity: { recentCount: number; limit: number; passed: boolean };
+    };
   }>;
   securityIncidentsBlocked: Array<{
     providerId: string;
     reason: string;
     amount?: number;
+    riskBreakdown?: {
+      trustScore: { value: number; threshold: number; passed: boolean };
+      priceAnomaly: { currentPrice: number; historicalAvg: number; multiplier: number; cap: number; passed: boolean };
+      velocity: { recentCount: number; limit: number; passed: boolean };
+    };
   }>;
   finalReport: {
     targetIp: string;

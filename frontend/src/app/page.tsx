@@ -14,7 +14,7 @@ export default function Dashboard() {
   const [error, setError] = useState<string | null>(null);
   const [walletBalance, setWalletBalance] = useState<string | null>(null);
 
-  const [feedSteps, setFeedSteps] = useState<Array<{ type: string; message: string }>>([]);
+  const [feedSteps, setFeedSteps] = useState<Array<{ type: string; message: string; riskBreakdown?: any }>>([]);
 
   const fetchBalance = async () => {
     try {
@@ -52,7 +52,7 @@ export default function Dashboard() {
       for (const blocked of data.securityIncidentsBlocked) {
         setFeedSteps((prev) => [...prev, { type: "DISCOVERY", message: `Discovered candidate: ${blocked.providerId}` }]);
         await new Promise((r) => setTimeout(r, 800));
-        setFeedSteps((prev) => [...prev, { type: "BLOCKED", message: `Payment BLOCKED: ${blocked.providerId} ($${blocked.amount?.toFixed(2) ?? "?"})` }]);
+        setFeedSteps((prev) => [...prev, { type: "BLOCKED", message: `Payment BLOCKED: ${blocked.providerId} ($${blocked.amount?.toFixed(2) ?? "?"})`, riskBreakdown: blocked.riskBreakdown }]);
         await new Promise((r) => setTimeout(r, 600));
         setFeedSteps((prev) => [...prev, { type: "RECOVERY", message: `Autonomous Fallback: Retrying with next provider` }]);
         await new Promise((r) => setTimeout(r, 600));
@@ -61,7 +61,7 @@ export default function Dashboard() {
       for (const step of data.stepsExecuted) {
         setFeedSteps((prev) => [...prev, { type: "DISCOVERY", message: `Discovered candidate for ${step.category}: ${step.providerId}` }]);
         await new Promise((r) => setTimeout(r, 600));
-        setFeedSteps((prev) => [...prev, { type: "APPROVED", message: `Payment APPROVED for ${step.providerId} ($${step.cost.toFixed(2)})` }]);
+        setFeedSteps((prev) => [...prev, { type: "APPROVED", message: `Payment APPROVED for ${step.providerId} ($${step.cost.toFixed(2)})`, riskBreakdown: step.riskBreakdown }]);
         await new Promise((r) => setTimeout(r, 600));
         setFeedSteps((prev) => [...prev, { type: "EXECUTION", message: `Successfully executed ${step.category}.` }]);
         await new Promise((r) => setTimeout(r, 600));
@@ -234,19 +234,35 @@ export default function Dashboard() {
 
             <div className="space-y-4">
               {feedSteps.map((step, idx) => (
-                <div key={idx} className="flex gap-3 items-start">
-                  <div className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${colorFor(step.type)}`}>
-                    {iconFor(step.type)}
+                <div key={idx} className="space-y-1.5">
+                  <div className="flex gap-3 items-start">
+                    <div className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${colorFor(step.type)}`}>
+                      {iconFor(step.type)}
+                    </div>
+                    <div className="pt-1.5 text-[13.5px] font-mono leading-snug">
+                      <span className={
+                        step.type === "APPROVED" || step.type === "EXECUTION" ? "text-emerald-700 font-medium" :
+                        step.type === "BLOCKED" ? "text-red-700 font-medium" :
+                        step.type === "PLANNING" ? "text-blue-700" : "text-neutral-600"
+                      }>
+                        {step.message}
+                      </span>
+                    </div>
                   </div>
-                  <div className="pt-1.5 text-[13.5px] font-mono leading-snug">
-                    <span className={
-                      step.type === "APPROVED" || step.type === "EXECUTION" ? "text-emerald-700 font-medium" :
-                      step.type === "BLOCKED" ? "text-red-700 font-medium" :
-                      step.type === "PLANNING" ? "text-blue-700" : "text-neutral-600"
-                    }>
-                      {step.message}
-                    </span>
-                  </div>
+
+                  {step.riskBreakdown && (step.type === "APPROVED" || step.type === "BLOCKED") && (
+                    <div className="ml-11 flex flex-wrap gap-2 pt-0.5 pb-1">
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] font-mono font-medium ring-1 ${step.riskBreakdown.trustScore.passed ? "bg-emerald-50 text-emerald-700 ring-emerald-200" : "bg-red-50 text-red-700 ring-red-200"}`}>
+                        Trust: {step.riskBreakdown.trustScore.value}/{step.riskBreakdown.trustScore.threshold} {step.riskBreakdown.trustScore.passed ? "✓" : "✗"}
+                      </span>
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] font-mono font-medium ring-1 ${step.riskBreakdown.priceAnomaly.passed ? "bg-emerald-50 text-emerald-700 ring-emerald-200" : "bg-red-50 text-red-700 ring-red-200"}`}>
+                        Price: ${step.riskBreakdown.priceAnomaly.currentPrice} vs ${step.riskBreakdown.priceAnomaly.historicalAvg} avg ({step.riskBreakdown.priceAnomaly.multiplier}x) {step.riskBreakdown.priceAnomaly.passed ? "✓" : `✗ (cap: ${step.riskBreakdown.priceAnomaly.cap}x)`}
+                      </span>
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] font-mono font-medium ring-1 ${step.riskBreakdown.velocity.passed ? "bg-emerald-50 text-emerald-700 ring-emerald-200" : "bg-red-50 text-red-700 ring-red-200"}`}>
+                        Velocity: {step.riskBreakdown.velocity.recentCount}/{step.riskBreakdown.velocity.limit} {step.riskBreakdown.velocity.passed ? "✓" : "✗"}
+                      </span>
+                    </div>
+                  )}
                 </div>
               ))}
               {isInvestigating && (
