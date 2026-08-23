@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ShieldCheck, Activity, Database, Banknote, CheckCircle2, XCircle, AlertTriangle, Play, RefreshCw, Cpu } from "lucide-react";
+import { ShieldCheck, Activity, Database, Banknote, CheckCircle2, XCircle, AlertTriangle, Play, RefreshCw, Cpu, Gauge, Users } from "lucide-react";
 import { runInvestigation, OrchestrationResult } from "@/lib/api";
 
 export default function Dashboard() {
@@ -10,40 +10,40 @@ export default function Dashboard() {
   const [isInvestigating, setIsInvestigating] = useState(false);
   const [result, setResult] = useState<OrchestrationResult | null>(null);
   const [error, setError] = useState<string | null>(null);
-  
-  const [feedSteps, setFeedSteps] = useState<Array<{type: string, message: string}>>([]);
-  
+
+  const [feedSteps, setFeedSteps] = useState<Array<{ type: string; message: string }>>([]);
+
   const handleRun = async () => {
     setIsInvestigating(true);
     setResult(null);
     setError(null);
     setFeedSteps([]);
-    
-    setFeedSteps(prev => [...prev, { type: 'PLANNING', message: `Analyzing intent: "Investigate suspicious IP ${targetIp}"...` }]);
-    
+
+    setFeedSteps((prev) => [...prev, { type: "PLANNING", message: `Analyzing intent: "Investigate suspicious IP ${targetIp}"...` }]);
+
     try {
-      await new Promise(r => setTimeout(r, 600));
-      
-      const data = await runInvestigation(targetIp, 0.20, simulateAttack);
-      
+      await new Promise((r) => setTimeout(r, 600));
+
+      const data = await runInvestigation(targetIp, 0.2, simulateAttack);
+
       for (const blocked of data.securityIncidentsBlocked) {
-        setFeedSteps(prev => [...prev, { type: 'DISCOVERY', message: `Discovered candidate: ${blocked.providerId}` }]);
-        await new Promise(r => setTimeout(r, 800));
-        setFeedSteps(prev => [...prev, { type: 'BLOCKED', message: `🚨 Payment BLOCKED: ${blocked.providerId} ($${blocked.amount?.toFixed(2) ?? '?'})` }]);
-        await new Promise(r => setTimeout(r, 600));
-        setFeedSteps(prev => [...prev, { type: 'RECOVERY', message: `🔄 Autonomous Fallback: Retrying with next provider` }]);
-        await new Promise(r => setTimeout(r, 600));
+        setFeedSteps((prev) => [...prev, { type: "DISCOVERY", message: `Discovered candidate: ${blocked.providerId}` }]);
+        await new Promise((r) => setTimeout(r, 800));
+        setFeedSteps((prev) => [...prev, { type: "BLOCKED", message: `Payment BLOCKED: ${blocked.providerId} ($${blocked.amount?.toFixed(2) ?? "?"})` }]);
+        await new Promise((r) => setTimeout(r, 600));
+        setFeedSteps((prev) => [...prev, { type: "RECOVERY", message: `Autonomous Fallback: Retrying with next provider` }]);
+        await new Promise((r) => setTimeout(r, 600));
       }
-      
+
       for (const step of data.stepsExecuted) {
-        setFeedSteps(prev => [...prev, { type: 'DISCOVERY', message: `Discovered candidate for ${step.category}: ${step.providerId}` }]);
-        await new Promise(r => setTimeout(r, 600));
-        setFeedSteps(prev => [...prev, { type: 'APPROVED', message: `Payment APPROVED for ${step.providerId} ($${step.cost.toFixed(2)})` }]);
-        await new Promise(r => setTimeout(r, 600));
-        setFeedSteps(prev => [...prev, { type: 'EXECUTION', message: `Successfully executed ${step.category}.` }]);
-        await new Promise(r => setTimeout(r, 600));
+        setFeedSteps((prev) => [...prev, { type: "DISCOVERY", message: `Discovered candidate for ${step.category}: ${step.providerId}` }]);
+        await new Promise((r) => setTimeout(r, 600));
+        setFeedSteps((prev) => [...prev, { type: "APPROVED", message: `Payment APPROVED for ${step.providerId} ($${step.cost.toFixed(2)})` }]);
+        await new Promise((r) => setTimeout(r, 600));
+        setFeedSteps((prev) => [...prev, { type: "EXECUTION", message: `Successfully executed ${step.category}.` }]);
+        await new Promise((r) => setTimeout(r, 600));
       }
-      
+
       setResult(data);
     } catch (err: any) {
       setError(err.message);
@@ -52,200 +52,228 @@ export default function Dashboard() {
     }
   };
 
+  const iconFor = (type: string) => {
+    switch (type) {
+      case "PLANNING": return <Activity className="w-3.5 h-3.5" />;
+      case "DISCOVERY": return <Database className="w-3.5 h-3.5" />;
+      case "APPROVED": return <CheckCircle2 className="w-3.5 h-3.5" />;
+      case "BLOCKED": return <XCircle className="w-3.5 h-3.5" />;
+      case "RECOVERY": return <RefreshCw className="w-3.5 h-3.5" />;
+      case "EXECUTION": return <Banknote className="w-3.5 h-3.5" />;
+      default: return <Activity className="w-3.5 h-3.5" />;
+    }
+  };
+
+  const colorFor = (type: string) => {
+    switch (type) {
+      case "PLANNING": return "text-blue-600 bg-blue-50";
+      case "DISCOVERY": return "text-neutral-500 bg-neutral-100";
+      case "APPROVED": return "text-emerald-700 bg-emerald-50";
+      case "BLOCKED": return "text-red-700 bg-red-50";
+      case "RECOVERY": return "text-amber-700 bg-amber-50";
+      case "EXECUTION": return "text-brand-700 bg-brand-50";
+      default: return "text-neutral-500 bg-neutral-100";
+    }
+  };
+
+  const pct = result ? Math.min(100, Math.round((result.totalSpent / result.budget) * 100)) : 0;
+  const isMalicious = result?.finalReport.verdict === "MALICIOUS";
+  const ringColor = isMalicious ? "#dc2626" : "#059669";
+
   return (
-    <div className="min-h-screen flex flex-col">
-      <header className="border-b border-white/10 bg-black/40 px-6 py-4 flex items-center justify-between">
+    <div className="min-h-screen">
+      {/* Header */}
+      <header className="flex items-center justify-between px-8 py-6 max-w-[1500px] mx-auto">
         <div className="flex items-center gap-3">
-          <div className="bg-gold-500/10 p-2 rounded-lg border border-gold-500/20">
-            <Cpu className="w-6 h-6 text-gold-400" />
+          <div className="w-11 h-11 rounded-full bg-neutral-900 flex items-center justify-center shrink-0">
+            <Cpu className="w-5 h-5 text-brand-400" />
           </div>
           <div>
-            <h1 className="text-xl font-bold tracking-tight text-white">ProcureX</h1>
-            <p className="text-xs text-slate-400">Economic Control Plane for Autonomous AI</p>
+            <div className="text-[15px] font-semibold tracking-tight text-neutral-900 leading-none">ProcureX</div>
+            <div className="text-xs text-neutral-500 mt-0.5">Economic Control Plane</div>
           </div>
         </div>
-        
-        <div className="flex items-center gap-6">
-          <div className="flex items-center gap-2">
-            <span className="relative flex h-3 w-3">
+
+        <div className="flex items-center gap-3">
+          <div className="hidden sm:flex items-center gap-2 bg-white rounded-full ring-1 ring-neutral-200 px-4 py-2">
+            <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
             </span>
-            <span className="text-sm text-slate-300">Algorand TestNet Connected</span>
+            <span className="text-xs font-medium text-neutral-600">Algorand TestNet</span>
           </div>
-          <div className="h-8 w-px bg-white/10"></div>
-          <div className="text-right">
-            <div className="text-sm font-medium text-white">SecurityAgent-01</div>
-            <div className="text-xs text-gold-400">Budget: $0.20 max/task</div>
+          <div className="flex items-center gap-2.5 bg-white rounded-full ring-1 ring-neutral-200 pl-2 pr-4 py-1.5">
+            <div className="w-8 h-8 rounded-full bg-brand-100 flex items-center justify-center">
+              <ShieldCheck className="w-4 h-4 text-brand-600" />
+            </div>
+            <div className="leading-tight">
+              <div className="text-xs font-semibold text-neutral-900">SecurityAgent-01</div>
+              <div className="text-[11px] text-brand-600">$0.20 / task</div>
+            </div>
           </div>
         </div>
       </header>
 
-      <main className="flex-1 grid grid-cols-1 lg:grid-cols-4 gap-6 p-6">
-        
-        <div className="col-span-1 space-y-6">
-          <div className="bg-black/40 border border-white/5 rounded-xl p-5 backdrop-blur-sm">
-            <h2 className="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-4 flex items-center gap-2">
-              <ShieldCheck className="w-4 h-4 text-emerald-400" />
-              Economic Guardrails
-            </h2>
-            <ul className="space-y-4 text-sm">
-              <li className="flex justify-between items-center pb-2 border-b border-white/5">
-                <span className="text-slate-400">Max Single Tx</span>
-                <span className="font-mono text-emerald-400">$0.05</span>
-              </li>
-              <li className="flex justify-between items-center pb-2 border-b border-white/5">
-                <span className="text-slate-400">Min Trust Score</span>
-                <span className="font-mono text-emerald-400">90 / 100</span>
-              </li>
-              <li className="flex justify-between items-center pb-2 border-b border-white/5">
-                <span className="text-slate-400">Anomaly Multiplier</span>
-                <span className="font-mono text-amber-400">5x Max</span>
-              </li>
-              <li className="flex justify-between items-center">
-                <span className="text-slate-400">Max Velocity</span>
-                <span className="font-mono text-emerald-400">10 / min</span>
-              </li>
-            </ul>
-          </div>
+      <main className="max-w-[1500px] mx-auto px-8 pb-10 space-y-5">
 
-          <div className="bg-black/40 border border-amber-500/20 rounded-xl p-5 backdrop-blur-sm relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/5 rounded-full blur-3xl"></div>
-            <h2 className="text-sm font-semibold text-amber-400 uppercase tracking-wider mb-4 flex items-center gap-2">
-              <AlertTriangle className="w-4 h-4" />
-              Attack Simulator
-            </h2>
-            <p className="text-xs text-slate-400 mb-4 leading-relaxed">
-              Enable this to artificially inject a malicious provider into the discovery layer with a 100x price markup ($2.00) to demonstrate the Economic Policy Engine blocking the AI's payment request.
-            </p>
-            <label className="flex items-center justify-between cursor-pointer group">
-              <span className="text-sm font-medium text-slate-200 group-hover:text-white transition-colors">Simulate Price Gouging</span>
-              <div className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${simulateAttack ? 'bg-amber-500' : 'bg-slate-700'}`}>
-                <input type="checkbox" className="sr-only" checked={simulateAttack} onChange={e => setSimulateAttack(e.target.checked)} />
-                <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${simulateAttack ? 'translate-x-6' : 'translate-x-1'}`} />
+        {/* Hero command bar */}
+        <section className="bg-white rounded-[28px] ring-1 ring-neutral-200/80 p-8">
+          <p className="text-sm text-neutral-400 mb-1">Autonomous Investigation</p>
+          <h1 className="text-3xl font-semibold tracking-tight text-neutral-900 mb-5">Ready when you are.</h1>
+          <div className="flex items-center gap-2 bg-neutral-50 rounded-full ring-1 ring-neutral-200 p-2 pl-6">
+            <input
+              type="text"
+              value={targetIp}
+              onChange={(e) => setTargetIp(e.target.value)}
+              className="flex-1 bg-transparent border-none text-neutral-900 focus:outline-none focus:ring-0 font-mono text-base placeholder:text-neutral-400"
+              placeholder="Enter target IP to investigate..."
+            />
+            <button
+              onClick={handleRun}
+              disabled={isInvestigating}
+              className="bg-neutral-900 hover:bg-neutral-800 text-white px-6 py-3.5 rounded-full font-medium text-sm transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
+            >
+              {isInvestigating ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4 fill-brand-400 text-brand-400" />}
+              {isInvestigating ? "Investigating" : "Run Investigation"}
+            </button>
+          </div>
+        </section>
+
+        {/* Bento grid */}
+        <div className="grid grid-cols-12 gap-5">
+
+          {/* Guardrail tiles */}
+          {[
+            { label: "Max Single Tx", value: "$0.05", icon: <Gauge className="w-4 h-4" /> },
+            { label: "Min Trust Score", value: "90/100", icon: <ShieldCheck className="w-4 h-4" /> },
+            { label: "Anomaly Cap", value: "5x", icon: <AlertTriangle className="w-4 h-4" /> },
+            { label: "Max Velocity", value: "10/min", icon: <Activity className="w-4 h-4" /> },
+          ].map((tile, i) => (
+            <div key={i} className="col-span-6 sm:col-span-3 bg-white rounded-3xl ring-1 ring-neutral-200/80 p-5 h-[140px] flex flex-col justify-between">
+              <div className="w-9 h-9 rounded-full bg-neutral-100 flex items-center justify-center text-neutral-500">{tile.icon}</div>
+              <div>
+                <div className="text-2xl font-semibold text-neutral-900 font-mono-tight">{tile.value}</div>
+                <div className="text-[11px] text-neutral-400 uppercase tracking-wide mt-1">{tile.label}</div>
+              </div>
+            </div>
+          ))}
+
+          {/* Attack simulator - dark card */}
+          <div className="col-span-12 lg:col-span-4 bg-neutral-900 rounded-3xl p-6 relative overflow-hidden flex flex-col justify-between min-h-[220px]">
+            <div className="absolute -top-10 -right-10 w-40 h-40 bg-brand-500/20 rounded-full blur-3xl" />
+            <div className="relative">
+              <div className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center text-brand-400 mb-4">
+                <AlertTriangle className="w-4 h-4" />
+              </div>
+              <h2 className="text-sm font-semibold text-white mb-2">Attack Simulator</h2>
+              <p className="text-[13px] text-neutral-400 leading-relaxed">
+                Inject a malicious provider with a 100x markup ($2.00) to demonstrate the policy engine blocking payment.
+              </p>
+            </div>
+            <label className="relative flex items-center justify-between cursor-pointer mt-5">
+              <span className="text-sm font-medium text-white">Simulate Price Gouging</span>
+              <div className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${simulateAttack ? "bg-brand-500" : "bg-white/15"}`}>
+                <input type="checkbox" className="sr-only" checked={simulateAttack} onChange={(e) => setSimulateAttack(e.target.checked)} />
+                <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${simulateAttack ? "translate-x-6" : "translate-x-1"}`} />
               </div>
             </label>
           </div>
-        </div>
 
-        <div className="col-span-1 lg:col-span-2 flex flex-col gap-4">
-          <div className="bg-black/40 border border-white/10 rounded-xl p-2 flex gap-2">
-            <input 
-              type="text" 
-              value={targetIp} 
-              onChange={e => setTargetIp(e.target.value)}
-              className="flex-1 bg-transparent border-none text-white px-4 py-2 focus:outline-none focus:ring-0 font-mono text-sm"
-              placeholder="Target IP..."
-            />
-            <button 
-              onClick={handleRun} 
-              disabled={isInvestigating}
-              className="bg-gold-500 hover:bg-gold-400 text-black px-6 py-2 rounded-lg font-medium text-sm transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isInvestigating ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
-              {isInvestigating ? "Executing..." : "Run Autonomous Investigation"}
-            </button>
-          </div>
+          {/* Live event log */}
+          <div className="col-span-12 lg:col-span-8 bg-white rounded-3xl ring-1 ring-neutral-200/80 p-6 min-h-[420px] overflow-y-auto">
+            <div className="text-[11px] font-semibold text-neutral-400 uppercase tracking-widest mb-5">Live Event Log</div>
 
-          <div className="flex-1 bg-black/60 border border-white/5 rounded-xl p-6 font-mono text-sm overflow-y-auto min-h-[400px]">
-            <div className="text-slate-500 mb-6"># Live Event Log</div>
             {error && (
-              <div className="text-red-400 mb-4 bg-red-950/30 p-3 rounded border border-red-900/50">
-                Error: {error}
-              </div>
+              <div className="text-red-700 mb-4 bg-red-50 px-3.5 py-2.5 rounded-xl text-sm">{error}</div>
             )}
+
             <div className="space-y-4">
               {feedSteps.map((step, idx) => (
-                <div key={idx} className="flex gap-4 items-start animate-in fade-in slide-in-from-bottom-2">
-                  <div className="mt-1">
-                    {step.type === 'PLANNING' && <Activity className="w-4 h-4 text-blue-400" />}
-                    {step.type === 'DISCOVERY' && <Database className="w-4 h-4 text-slate-400" />}
-                    {step.type === 'APPROVED' && <CheckCircle2 className="w-4 h-4 text-emerald-400" />}
-                    {step.type === 'BLOCKED' && <XCircle className="w-4 h-4 text-red-400" />}
-                    {step.type === 'EXECUTION' && <Banknote className="w-4 h-4 text-gold-400" />}
+                <div key={idx} className="flex gap-3 items-start">
+                  <div className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${colorFor(step.type)}`}>
+                    {iconFor(step.type)}
                   </div>
-                  <div className="flex-1">
-                    <span className={`
-                      ${step.type === 'PLANNING' ? 'text-blue-400' : ''}
-                      ${step.type === 'DISCOVERY' ? 'text-slate-300' : ''}
-                      ${step.type === 'APPROVED' ? 'text-emerald-400 font-semibold' : ''}
-                      ${step.type === 'BLOCKED' ? 'text-red-400 font-semibold' : ''}
-                      ${step.type === 'EXECUTION' ? 'text-gold-400' : ''}
-                    `}>
+                  <div className="pt-1.5 text-[13.5px] font-mono leading-snug">
+                    <span className={
+                      step.type === "APPROVED" || step.type === "EXECUTION" ? "text-emerald-700 font-medium" :
+                      step.type === "BLOCKED" ? "text-red-700 font-medium" :
+                      step.type === "PLANNING" ? "text-blue-700" : "text-neutral-600"
+                    }>
                       {step.message}
                     </span>
                   </div>
                 </div>
               ))}
               {isInvestigating && (
-                <div className="flex gap-4 items-center animate-pulse text-slate-500 mt-4">
-                  <RefreshCw className="w-4 h-4 animate-spin" />
-                  <span>Agent is thinking...</span>
+                <div className="flex gap-3 items-center">
+                  <div className="w-8 h-8 rounded-full bg-neutral-100 flex items-center justify-center text-neutral-400">
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                  </div>
+                  <span className="text-[13.5px] text-neutral-400 font-mono">Agent is thinking...</span>
                 </div>
+              )}
+              {feedSteps.length === 0 && !isInvestigating && (
+                <div className="text-sm text-neutral-400 py-10 text-center">Run an investigation to see the live trace.</div>
               )}
             </div>
           </div>
-        </div>
 
-        <div className="col-span-1 space-y-6">
-          {result ? (
-            <>
-              <div className="bg-black/40 border border-white/5 rounded-xl p-5 backdrop-blur-sm">
-                <h2 className="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-4">
-                  Final Incident Report
-                </h2>
-                
-                <div className={`p-4 rounded-lg border flex items-center justify-center mb-6
-                  ${result.finalReport.verdict === 'MALICIOUS' ? 'bg-red-950/20 border-red-500/30 text-red-400' : 'bg-emerald-950/20 border-emerald-500/30 text-emerald-400'}
-                `}>
-                  <div className="text-center">
-                    <div className="text-xs uppercase tracking-widest opacity-80 mb-1">Verdict</div>
-                    <div className="text-2xl font-bold tracking-tight">{result.finalReport.verdict}</div>
+          {/* Verdict ring */}
+          <div className="col-span-6 lg:col-span-4 bg-white rounded-3xl ring-1 ring-neutral-200/80 p-6 flex flex-col items-center justify-center min-h-[220px]">
+            {result ? (
+              <div
+                className="relative w-32 h-32 rounded-full flex items-center justify-center"
+                style={{ background: `conic-gradient(${ringColor} ${pct}%, #eee 0)` }}
+              >
+                <div className="absolute inset-[6px] bg-white rounded-full flex flex-col items-center justify-center">
+                  <span className="text-[10px] uppercase text-neutral-400 tracking-wide">Verdict</span>
+                  <span className="text-base font-bold" style={{ color: ringColor }}>{result.finalReport.verdict}</span>
+                </div>
+              </div>
+            ) : (
+              <div className="w-32 h-32 rounded-full border-2 border-dashed border-neutral-200 flex items-center justify-center text-center text-xs text-neutral-400 px-4">
+                Verdict appears here
+              </div>
+            )}
+          </div>
+
+          {/* Financial stat pills */}
+          <div className="col-span-12 lg:col-span-8 grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div className="bg-white rounded-2xl ring-1 ring-neutral-200/80 p-4">
+              <Banknote className="w-4 h-4 text-brand-600 mb-3" />
+              <div className="text-xl font-semibold text-brand-600 font-mono-tight">${result ? result.totalSpent.toFixed(2) : "0.00"}</div>
+              <div className="text-[11px] text-neutral-400 uppercase tracking-wide mt-1">Total Spent</div>
+            </div>
+            <div className="bg-white rounded-2xl ring-1 ring-neutral-200/80 p-4">
+              <Gauge className="w-4 h-4 text-neutral-500 mb-3" />
+              <div className="text-xl font-semibold text-neutral-900 font-mono-tight">{pct}%</div>
+              <div className="text-[11px] text-neutral-400 uppercase tracking-wide mt-1">Budget Used</div>
+            </div>
+            <div className="bg-white rounded-2xl ring-1 ring-neutral-200/80 p-4">
+              <XCircle className="w-4 h-4 text-red-500 mb-3" />
+              <div className="text-xl font-semibold text-red-600 font-mono-tight">{result ? result.securityIncidentsBlocked.length : 0}</div>
+              <div className="text-[11px] text-neutral-400 uppercase tracking-wide mt-1">Exploits Blocked</div>
+            </div>
+            <div className="bg-white rounded-2xl ring-1 ring-neutral-200/80 p-4">
+              <Users className="w-4 h-4 text-emerald-600 mb-3" />
+              <div className="text-xl font-semibold text-emerald-600 font-mono-tight">0</div>
+              <div className="text-[11px] text-neutral-400 uppercase tracking-wide mt-1">Human Approvals</div>
+            </div>
+          </div>
+
+          {result && result.finalReport.findings.length > 0 && (
+            <div className="col-span-12 bg-white rounded-3xl ring-1 ring-neutral-200/80 p-6">
+              <div className="text-[11px] font-semibold text-neutral-400 uppercase tracking-widest mb-4">Findings</div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {result.finalReport.findings.map((f, i) => (
+                  <div key={i} className="text-[13px] text-neutral-700 bg-neutral-50 px-4 py-3 rounded-xl leading-relaxed">
+                    {f}
                   </div>
-                </div>
-
-                <div className="space-y-3 mb-6">
-                  <div className="text-xs text-slate-500 uppercase tracking-wider">Findings</div>
-                  {result.finalReport.findings.map((f, i) => (
-                    <div key={i} className="text-sm text-slate-300 bg-white/5 p-2 rounded">
-                      {f}
-                    </div>
-                  ))}
-                </div>
+                ))}
               </div>
-
-              <div className="bg-black/40 border border-white/5 rounded-xl p-5 backdrop-blur-sm">
-                <h2 className="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-4 flex items-center gap-2">
-                  <Banknote className="w-4 h-4" />
-                  Financial Summary
-                </h2>
-                <ul className="space-y-4 text-sm">
-                  <li className="flex justify-between items-center pb-2 border-b border-white/5">
-                    <span className="text-slate-400">Total Spent</span>
-                    <span className="font-mono text-gold-400">${result.totalSpent.toFixed(2)}</span>
-                  </li>
-                  <li className="flex justify-between items-center pb-2 border-b border-white/5">
-                    <span className="text-slate-400">Budget Utilization</span>
-                    <span className="font-mono text-white">{((result.totalSpent / result.budget) * 100).toFixed(0)}%</span>
-                  </li>
-                  <li className="flex justify-between items-center pb-2 border-b border-white/5">
-                    <span className="text-slate-400">Exploits Blocked</span>
-                    <span className="font-mono text-red-400">{result.securityIncidentsBlocked.length}</span>
-                  </li>
-                  <li className="flex justify-between items-center">
-                    <span className="text-slate-400">Human Approvals</span>
-                    <span className="font-mono text-emerald-400">0</span>
-                  </li>
-                </ul>
-              </div>
-            </>
-          ) : (
-             <div className="h-full border border-dashed border-white/10 rounded-xl flex items-center justify-center text-slate-500 text-sm p-6 text-center">
-               Report will appear here once the investigation completes.
-             </div>
+            </div>
           )}
         </div>
-
       </main>
     </div>
   );

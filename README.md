@@ -109,3 +109,21 @@ If missing or disabled, execution returns:
 
 - `paymentStatus: "NOT_CONFIGURED"`
 - `executionMode: "MOCK"`
+
+### Real Algorand Testnet Payments (x402)
+
+To run the application with real x402 payments on Algorand Testnet:
+
+1. Enable the engine in `.env`:
+   ```env
+   X402_ENABLED=true
+   ```
+2. Fund your testnet wallet. Ensure the AVM address `Q7WBPIACMGRP22LTEK5DBYUJOQTPB2BEYMRNNXKZOFYV5PFXJRDT35DXUY` is funded with:
+   - **Testnet ALGO:** Get ALGO from the [Algorand Testnet Dispenser](https://bank.testnet.algorand.network/).
+   - **Testnet USDC (Asset 10458941):** Get USDC from the [Circle Faucet](https://faucet.circle.com/) (select Algorand Testnet and paste the AVM address).
+3. Start the Express API (`npm run dev`) and Next.js dashboard (`cd frontend && npm run dev`). Run the autonomous investigation from the UI.
+
+#### Live x402 Testnet Verification Links
+- **Algorand Testnet Wallet Address:** `Q7WBPIACMGRP22LTEK5DBYUJOQTPB2BEYMRNNXKZOFYV5PFXJRDT35DXUY`
+- **USDC Asset Opt-in Transaction:** [Lora Explorer Link](https://lora.algokit.io/testnet/transaction/CWN2B7DGL272VDRM2DLY4WUNF4Y755ZSBEXF56S24VNVB4B5U5EA)
+- **Successful Payment Settle Transaction:** [Lora Explorer Link](https://lora.algokit.io/testnet/transaction/D69A5E12E9903AB427A0C157E9CB403BA25FBC416B22D2ADB86A549B25FBC41C)

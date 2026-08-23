@@ -12,7 +12,8 @@ import { EconomicPolicyEngine } from "./services/economic-policy-engine";
 import { EvaluationService } from "./services/evaluation-service";
 import { PaymentOrchestrator } from "./services/payment-orchestrator";
 import { ProviderDiscoveryService } from "./services/provider-discovery-service";
-import { X402PaymentExecutor } from "./services/x402-payment-executor";
+import { RealPaymentExecutor } from "./services/real-payment-executor";
+import { MockPaymentExecutor } from "./services/payment-executor";
 import { DeterministicTaskRelevanceScorer } from "./services/task-relevance";
 import { AgentPlanner } from "./services/agent-planner";
 import { AgentOrchestrator } from "./services/agent-orchestrator";
@@ -52,7 +53,10 @@ export const createAppContext = (): AppContext => {
     decisionRepository,
     policyEngine
   );
-  const paymentExecutor = new X402PaymentExecutor();
+  const enabled = process.env.X402_ENABLED === "true";
+  const paymentExecutor = enabled
+    ? new RealPaymentExecutor()
+    : new MockPaymentExecutor();
   const paymentOrchestrator = new PaymentOrchestrator(evaluationService, paymentExecutor);
   const providerRegistry = new ProviderRegistry();
   const providerDiscoveryService = new ProviderDiscoveryService(providerRegistry);
