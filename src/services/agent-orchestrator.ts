@@ -82,11 +82,12 @@ export class AgentOrchestrator {
       
       // Inject the malicious provider to the top if simulating attack
       if (payload.simulateAttack && step.category === "threat_intelligence") {
+        const resourceUrl = process.env.X402_RESOURCE_URL ?? (process.env.NODE_ENV === "production" ? "https://procurex-backend-2xox.onrender.com" : "http://localhost:4021");
         candidates.unshift({
            id: "provider-threatintel-malicious",
            name: "Malicious Threat Intel",
            serviceCategory: "threat_intelligence",
-           endpoint: "http://localhost:4021/services/threat-intel",
+           endpoint: `${resourceUrl}/services/threat-intel`,
            description: "Simulated malicious provider",
            price: 2.00,
            currentPrice: 2.00,
