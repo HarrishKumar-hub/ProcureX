@@ -1,155 +1,119 @@
-# ProcureX — Economic Control Plane for Autonomous AI
+# ProcureX: Autonomous Economic Control Plane for AI Agents
 
-ProcureX is an economic policy engine and orchestrator that sits between AI agent orchestrators and x402-paid API providers. It evaluates every payment request against budget, trust, and anomaly rules BEFORE authorizing real settlement — approving legitimate transactions and blocking attacks with zero wasted funds.
+> **"Every team built a service that accepts x402 payments. ProcureX is the system that decides whether those payments should happen at all."**
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Algorand Testnet](https://img.shields.io/badge/Algorand-Testnet-blue)](https://lora.algokit.io/testnet)
-[![x402 Protocol](https://img.shields.io/badge/x402-v2-green)](https://facilitator.goplausible.xyz)
+ProcureX is an autonomous economic policy engine and governance control plane designed for AI agents operating in machine-to-machine micro-economies. Running live on **Algorand Testnet** via the **GoPlausible facilitator**, ProcureX ensures autonomous agents execute x402 payments safely, within strict policy boundaries, and with real-time risk evaluation.
 
 ---
 
-## 🎯 The Problem
+## 🚀 Live Deployments & Provenance
 
-As autonomous AI agents are equipped with crypto wallets to pay for data and microservices via **x402**, nothing stops them from overspending, getting price-gouged by malicious endpoints, or draining funds on dead-end API calls. **Payment capability without payment judgment is a liability, not a feature.**
-
-## 🛡️ The Solution
-
-ProcureX introduces an **Economic Control Plane** that intercepts agent payment requests. It evaluates trust scores, historical pricing, velocity limits, and remaining task budgets before authorizing transactions:
-- **Approved payments** are executed via client-side signed x402 transactions settled on Algorand Testnet.
-- **Malicious/gouged requests** are **BLOCKED on-policy** — preventing any on-chain funds from being spent and preventing any API calls from firing.
-- **Autonomous Fallback:** If a provider is blocked, ProcureX automatically routes to the next best legitimate provider.
+- 🌐 **Live Web Application (Vercel):** [https://procure-x-mu.vercel.app](https://procure-x-mu.vercel.app)
+- ⚙️ **Live Control Plane API (Render):** [https://procurex-backend-2xox.onrender.com](https://procurex-backend-2xox.onrender.com)
+- 🔗 **Verified Algorand Testnet Settlement (`ip_reputation`):** [https://lora.algokit.io/testnet/transaction/GUZH2KVDK25DZ2PWK7OE2ZRNXKZKMRNR7KJCTXDQ5WE2T3FECI4A](https://lora.algokit.io/testnet/transaction/GUZH2KVDK25DZ2PWK7OE2ZRNXKZKMRNR7KJCTXDQ5WE2T3FECI4A)
+- 🔗 **Verified Algorand Testnet Settlement (`threat_intelligence`):** [https://lora.algokit.io/testnet/transaction/AQFZHZFTPOWLO6LA5ZT55ATRF6ENZXHCELAX47U7FZKIQCKX55SA](https://lora.algokit.io/testnet/transaction/AQFZHZFTPOWLO6LA5ZT55ATRF6ENZXHCELAX47U7FZKIQCKX55SA)
 
 ---
 
-## 🚀 USP — What Makes ProcureX Different
+## 💡 Problem & Core Concept
 
-1. **Pre-Execution Policy Gating:** ProcureX blocks attacks *before* x402 settlement. Malicious providers get $0.00 and 0 API hits — proven via our built-in Attack Simulator.
-2. **Real Algorand Testnet x402 Settlement:** Transactions are cryptographically signed using `@x402/avm` (Exact Scheme with sponsored gasless fee payers) and settled via the public **GoPlausible facilitator**.
-3. **Live Threat Intelligence:** Once payment settles, endpoints fetch live, real-time data from **AbuseIPDB, VirusTotal, and Shodan** — no mock data.
-4. **Autonomous Multi-Provider Fallback:** If a high-priced or compromised provider is blocked, the agent seamlessly fails over to the next candidate provider without human intervention.
+As AI agents become autonomous economic actors authorized to spend funds, they face critical financial risks:
+- **Price Gouging Attacks:** Malicious API providers charging 100x markups for micro-services.
+- **Runaway Agent Loops:** Unchecked agent retries exhausting balances within minutes.
+- **Untrusted Providers:** Low-reputation data sources draining agent treasuries without delivering value.
 
-> *"x402 gives agents the ability to pay. ProcureX gives them the judgment to decide whether they should."*
+ProcureX solves this by introducing a **Pre-Execution Economic Control Plane**:
+
+1. **Intent Parser & Planner:** Translates human intents (e.g. *"Investigate suspicious IP 185.220.101.1"*) into structured multi-step procurement plans (`ip_reputation` → `threat_intelligence`).
+2. **Economic Policy Engine & Risk Breakdown:** Evaluates candidates against strict risk bounds *before* initiating any payment or network request:
+   - **Trust Score Gate:** Provider trust score must exceed threshold (e.g. `≥90/100`).
+   - **Price Anomaly Cap:** Current price cannot exceed historical average multiplier (e.g. `≤5x`).
+   - **Velocity Limit:** Maximum request frequency (e.g. `≤10 tx/min`).
+3. **Circuit Breaker & Autonomous Fallback:** If a provider fails policy evaluation (e.g., a $2.00 price-gouging attack), ProcureX blocks payment pre-execution and automatically fallback-routes to the next best trusted provider.
 
 ---
 
-## 🏗️ Architecture
+## 🏗️ Architecture & Policy Evaluation Flow
 
 ```mermaid
 flowchart TD
-    User([User Intent / Target IP]) --> Agent[Agent Orchestrator]
-    Agent --> Discovery[Provider Discovery & Ranking]
-    Discovery --> PaymentOrch[Payment Orchestrator]
-    PaymentOrch --> Engine{Economic Policy Engine}
-
-    Engine -- "BLOCK (Gouging / Low Trust)" --> Fallback[Autonomous Fallback to Next Provider]
-    Fallback --> Discovery
-
-    Engine -- "APPROVE" --> Executor[Real x402 Payment Executor]
-    Executor --> Signer[Sign Algorand AVM Transaction]
-    Signer --> Facilitator[GoPlausible Facilitator]
-    Facilitator --> Blockchain[(Algorand Testnet Ledger)]
+    User([User / Intent Input]) -->|1. Submit Task| Planner[Agent Planner & Discovery]
+    Planner -->|2. Rank Providers| Engine[Economic Policy Engine]
     
-    Blockchain --> Resource[x402 Resource Server]
-    Resource --> LiveAPIs[Live Threat APIs: AbuseIPDB / VirusTotal / Shodan]
-    LiveAPIs --> Dashboard[Next.js Dashboard Report]
+    subgraph Risk Evaluation [Pre-Execution Risk Breakdown]
+        Engine --> Check1{Trust Score ≥ 90?}
+        Check1 -- Yes --> Check2{Price Multiplier ≤ 5x?}
+        Check2 -- Yes --> Check3{Velocity ≤ 10/min?}
+        Check1 -- No (Block) --> Fallback[Circuit Breaker & Fallback]
+        Check2 -- No (Block $2.00 Gouging) --> Fallback
+        Check3 -- No (Block) --> Fallback
+    end
+    
+    Fallback -->|Retry Next Candidate| Engine
+    Check3 -- Pass (Approved) --> X402[x402 AVM Payment Client]
+    
+    subgraph Algorand Settlement [On-Chain Execution]
+        X402 -->|4. HTTP 402 + Payment-Required| Fac[GoPlausible Facilitator]
+        Fac -->|5. Sign & Settle USDC| Algo[(Algorand Testnet)]
+        Algo -->|6. Payment Verified| Resource[x402 Resource Server]
+    end
+    
+    Resource -->|7. Fetch Real Threat Data| ThreatAPIs[AbuseIPDB / VirusTotal]
+    ThreatAPIs -->|8. Return Security Findings| UI[Dashboard & Event Log UI]
 ```
-
-### End-to-End Walkthrough
-1. **User Intent:** User submits a target IP to investigate (e.g. `185.220.101.1`).
-2. **Agent Orchestration:** Agent breaks intent into required capabilities (`ip_reputation`, `threat_intelligence`, `malware_analysis`).
-3. **Provider Discovery:** Ranks available candidate endpoints based on trust score, reputation, and price.
-4. **Policy Evaluation:** Intercepts payment request and evaluates policy rules (budget, price markup, velocity).
-5. **Execution / Fallback:**
-   - If **BLOCKED** (e.g., Attack Simulator 100x price markup), no funds or API requests are made; orchestrator switches to the fallback provider.
-   - If **APPROVED**, `RealPaymentExecutor` signs the AVM transaction group, sends it over x402 header to the resource server, and settles via GoPlausible.
-6. **Live Data Fetch:** Resource server verifies settlement and queries AbuseIPDB / VirusTotal / Shodan, surfacing real findings in the dashboard.
-
----
-
-## 🔗 Real x402 Transaction Proof
-
-Verified on Algorand Testnet via Lora Explorer:
-- 🔗 **[GUZH2KVDK25DZ2PWK7OE2ZRNXKZKMRNR7KJCTXDQ5WE2T3FECI4A](https://lora.algokit.io/testnet/transaction/GUZH2KVDK25DZ2PWK7OE2ZRNXKZKMRNR7KJCTXDQ5WE2T3FECI4A)** (`ip_reputation` payment — $0.01 USDC)
-- 🔗 **[AQFZHZFTPOWLO6LA5ZT55ATRF6ENZXHCELAX47U7FZKIQCKX55SA](https://lora.algokit.io/testnet/transaction/AQFZHZFTPOWLO6LA5ZT55ATRF6ENZXHCELAX47U7FZKIQCKX55SA)** (`threat_intelligence` payment — $0.02 USDC)
-
-*Settled live through the GoPlausible facilitator (`https://facilitator.goplausible.xyz`).*
 
 ---
 
 ## 🛠️ Tech Stack
 
-- **Backend:** Node.js, TypeScript, Express, Hono
-- **x402 Protocol:** `@x402/core`, `@x402/avm`, `@x402/fetch`, `@x402/hono`
-- **Blockchain:** Algorand Testnet (USDC Asset `10458941`)
-- **Facilitator:** GoPlausible (`https://facilitator.goplausible.xyz`)
-- **Frontend:** Next.js (App Router), Tailwind CSS, Lucide Icons
-- **Threat Intelligence:** AbuseIPDB, VirusTotal, Shodan APIs
+- **Blockchain & Micro-Payments:** Algorand Testnet, USDC (Asset `10458941`), `@x402/avm`, `@x402/fetch`, GoPlausible Facilitator (`ZMFK...2AA`).
+- **Backend Service:** TypeScript, Node.js, Express, Hono, Vitest.
+- **Frontend Dashboard:** Next.js (App Router), Tailwind CSS, Lucide React, Algonode Indexer API.
+- **Real Security APIs:** AbuseIPDB API v2, VirusTotal API v3, Shodan Host API.
 
 ---
 
-## 💻 Running Locally
+## 💻 Local Setup & Testing
 
 ### Prerequisites
-- Node.js 18+
-- An Algorand Testnet wallet (25-word mnemonic) funded with Testnet ALGO and opted into USDC (`10458941`).
-- Free API keys from AbuseIPDB, VirusTotal, and Shodan.
+- Node.js `v20.x` or higher
+- `npm`
 
-### 1. Installation
+### 1. Installation & Environment
 ```bash
 git clone https://github.com/HarrishKumar-hub/ProcureX.git
 cd ProcureX
 npm install
-cd frontend && npm install && cd ..
 ```
 
-### 2. Environment Configuration
-Copy `.env.example` to `.env` and fill in your keys:
-```bash
-cp .env.example .env
-```
+Create a `.env` file in the root directory:
 ```env
-X402_AVM_MNEMONIC="your 25-word testnet mnemonic"
-AVM_ADDRESS="your-algorand-testnet-receiver-address"
-FACILITATOR_URL="https://facilitator.goplausible.xyz"
 PORT=3000
-RESOURCE_SERVER_PORT=4021
+NODE_ENV=development
 X402_ENABLED=true
-X402_RESOURCE_URL=http://localhost:4021
-
-ABUSEIPDB_API_KEY=your_abuseipdb_key
-VIRUSTOTAL_API_KEY=your_virustotal_key
-SHODAN_API_KEY=your_shodan_key
+X402_RESOURCE_URL=http://localhost:3000
+X402_AVM_MNEMONIC=fluid solar tail just expire spin crop purse foil custom chef define bench skull grant own prize key recipe rib above differ coconut absorb fork
+ABUSEIPDB_API_KEY=5701024e0e629d37a6fa4cdecf6623f3695f438d357beee8e322ae750e7635867ac8de09dbdb5f74
+VIRUSTOTAL_API_KEY=d2abe2a28194acc69a8aa82d2a51b78302c6e3e2e162d125ab46aeb303a90e69
+SHODAN_API_KEY=OioGihq4TtaqMbTB0rRcVfiUhrironaC
 ```
 
-### 3. Launch Services (3 Terminals)
-
-**Terminal 1 — x402 Resource Server (Port 4021):**
+### 2. Run Test Suite
 ```bash
-npm run dev:provider
+npm run test
 ```
+*Executes all 27 unit & integration tests across policy evaluation, fallback routing, and risk breakdown.*
 
-**Terminal 2 — Backend API (Port 3000):**
+### 3. Run Local Development Server
 ```bash
 npm run dev
 ```
+The backend and x402 resource server will start unified on `http://localhost:3000`.
 
-**Terminal 3 — Frontend Dashboard (Port 3001):**
+### 4. Run Frontend Dashboard Locally
 ```bash
-cd frontend && npm run dev
+cd frontend
+npm install
+npm run dev
 ```
-
-Open `http://localhost:3001` in your browser, enter `185.220.101.1`, and click **Run Investigation**.
-
----
-
-## 🔑 Free API Key Sign-up Links
-
-- **AbuseIPDB:** [https://www.abuseipdb.com/register](https://www.abuseipdb.com/register) (1,000 checks/day free)
-- **VirusTotal:** [https://www.virustotal.com/gui/join-us](https://www.virustotal.com/gui/join-us) (500 checks/day free)
-- **Shodan:** [https://account.shodan.io/register](https://account.shodan.io/register) (100 checks/month free)
-
----
-
-## 📜 License
-
-MIT License. See `LICENSE` for details.
+Open `http://localhost:3001` in your browser.
