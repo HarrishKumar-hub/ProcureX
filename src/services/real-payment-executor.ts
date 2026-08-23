@@ -139,11 +139,16 @@ export class RealPaymentExecutor implements PaymentExecutor {
   }
 
   private async safeParseJson(response: Response): Promise<unknown> {
-    const contentType = response.headers.get("content-type");
-    if (!contentType?.includes("application/json")) {
-      return response.text();
+    try {
+      const cloned = response.clone();
+      const contentType = cloned.headers.get("content-type");
+      if (!contentType?.includes("application/json")) {
+        return await cloned.text();
+      }
+      return await cloned.json();
+    } catch {
+      return {};
     }
-    return response.json();
   }
 
   private async getSecretKeyFromMnemonic(avmMnemonic: string): Promise<string> {
