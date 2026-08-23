@@ -53,7 +53,7 @@ export const createAppContext = (): AppContext => {
     decisionRepository,
     policyEngine
   );
-  const enabled = process.env.X402_ENABLED === "true";
+  const enabled = process.env.X402_ENABLED !== "false";
   const paymentExecutor = enabled
     ? new RealPaymentExecutor()
     : new MockPaymentExecutor();
