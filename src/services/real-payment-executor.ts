@@ -29,7 +29,7 @@ export class RealPaymentExecutor implements PaymentExecutor {
 
   constructor(config: Partial<X402ExecutorConfig> = {}) {
     this.config = {
-      resourceUrl: config.resourceUrl ?? process.env.X402_RESOURCE_URL ?? "http://localhost:3000",
+      resourceUrl: config.resourceUrl ?? process.env.X402_RESOURCE_URL ?? (process.env.NODE_ENV === "production" ? "https://procurex-backend-2xox.onrender.com" : "http://localhost:3000"),
       avmMnemonic: config.avmMnemonic ?? process.env.X402_AVM_MNEMONIC,
       enabled: config.enabled ?? process.env.X402_ENABLED === "true"
     };
