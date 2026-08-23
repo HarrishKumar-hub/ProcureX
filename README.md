@@ -30,7 +30,6 @@ ProcureX solves this by introducing a **Pre-Execution Economic Control Plane**:
    - **Price Anomaly Cap:** Current price cannot exceed historical average multiplier (e.g. `≤5x`).
    - **Velocity Limit:** Maximum request frequency (e.g. `≤10 tx/min`).
 3. **Circuit Breaker & Autonomous Fallback:** If a provider fails policy evaluation (e.g., a $2.00 price-gouging attack), ProcureX blocks payment pre-execution and automatically fallback-routes to the next best trusted provider.
-4. **Agent-to-Agent Reasoning Layer:** Once payment settles over x402, a secondary autonomous **ThreatIntel Analyst Agent (`threat-intel-analyst-v1`)** independently evaluates the raw security indicators and produces a confidence-scored assessment & recommendation (`ESCALATE`, `MONITOR`, `IGNORE`) — establishing a genuine autonomous agent-to-agent transaction over the x402 payment rail.
 
 ---
 
